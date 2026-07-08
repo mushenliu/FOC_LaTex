@@ -1,0 +1,8 @@
+# LaTeX auxiliary files
+out/*.aux
+out/*.log
+out/*.toc
+out/*.fls
+out/*.fdb_latexmk
+out/*.xdv
+out/*.synctex(busy)
