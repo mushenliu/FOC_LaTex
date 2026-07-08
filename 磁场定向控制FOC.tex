@@ -99,7 +99,7 @@
     }
 }
 % 目录格式设置
-\setcounter{tocdepth}{3} %将目录深度设置为二级标题
+\setcounter{tocdepth}{2} %将目录深度设置为二级标题
 \renewcommand\contentsname{目\quad\quad 录}  % 将英文“Contents”重命名为目录
 \titlecontents{section}[0em]{\zihao{4}\ZiTi}{\contentspush{\thecontentslabel\hspace{0.7em}}}{}{\titlerule*[5pt]{.}\contentspage}
 \titlecontents{subsection}[2.2em]{\zihao{-4}\ZiTi}
@@ -3717,5 +3717,172 @@ Q轴电感需要满足\(L_q\ge 2.1\textrm{mH}\)，但是辨识结果为
 （D轴的加性偏置和Q轴的增益误差）。由于电流环采用带积分环节的控制器，积分作用保证了
 闭环系统的稳态增益不受模型增益摄动的影响；但模型误差仍会在动态过程中影响
 超调量和调节时间等暂态指标，这是后续控制器参数整定时需要关注的。
+
+\newpage
+\section{速度-电流环的频域矫正控制器设计}
+\subsection{电流环的频域矫正控制器设计}
+\subsubsection{D轴频域矫正控制器设计与闭环验证}
+D轴电流环的传递函数为：
+\begin{align*}
+    G_D(z)&=(1-z^{-1})\mathcal{Z}[\cfrac{e^{-66.93\times10^{-6}s}}
+        {s(5.70125+1.86152\times 10^{-3}s)(120\times 10^{-9}s+1)}]\\
+        &=z^{-2}\cfrac{0.03222 + 0.0001666 z^{-1} + 4.22\times 10^{-21}z^{-2}}{1- 0.8154 z^{-1}}
+\end{align*}
+
+对于电流环控制，为了实现无差跟踪，需要加入积分环节\(\cfrac{1}{s}\)，使用双线性变换可得在电流环采样周期\(T_s=66.67\)
+us下的离散化形式为：
+\begin{equation*}
+    I(z)=\cfrac{T_s}{2}\times\cfrac{1+z^{-1}}{1-z^{-1}}=3.332\times 10^{-5}\times\cfrac{1+z^{-1}}{1-z^{-1}}
+\end{equation*}
+
+可以构造带积分环节的等价被控对象\(I(z)G_D(z)\)，其开环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/带积分环节的D轴等价被控对象开环频率特性.png}
+    \caption{带积分环节的D轴等价被控对象开环频率特性}
+\end{figure}
+
+采用一阶超前校正控制\(C_D(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，开环截止频率设定为1000Hz，以不低于40°的相位裕度为目标，
+在1000Hz处提供最多60°的相位补偿，可以计算得到：
+\begin{equation*}
+    \begin{cases}
+        \alpha = \cfrac{1-\sin(60°)}{1+\sin(60°)}=0.0718\\
+        T = \cfrac{1}{2\pi\times 1000\sqrt{\alpha}} = 5.9391\times 10^{-4}
+    \end{cases}
+\end{equation*}
+
+最后根据等价被控对象在1000Hz处的增益，调整放大系数K，最终可得带积分的D轴超前控制器：
+\begin{equation*}
+    C_D(s)=\cfrac{12.95s+2.18\times 10^4}{4.265\times 10^{-5}s^2+s}
+\end{equation*}
+
+使用双线性变换离散化后得到：
+\begin{equation*}
+    C_D(z)=\cfrac{5.998+0.6373z^{-1}-5.361z^{-2}}{1-1.123z^{-1}+0.1227z^{-2}}
+\end{equation*}
+
+经过超前控制后的开环频率特性和闭环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]
+    {图片/D轴开-闭环频率特性.png}
+    \caption{D轴开-闭环频率特性}
+\end{figure}
+
+矫正后，D轴电流环的开环截止频率1000.00073Hz，相位裕度49.46547°满足设计要求。相位穿越频率1883.94275Hz，
+幅值裕度5.69334dB，闭环带宽2213.62137Hz。闭环前后的单位阶跃响应如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/D轴开-闭环单位阶跃响应对比.png}
+    \caption{D轴开-闭环单位阶跃响应对比}
+\end{figure}
+
+可以发现，通过带积分环节的超前校正控制器，使得能够无差跟踪给定信号，超调量21.3\(\%\)，调节时间为1.6ms，用一定的超调
+换来了极快的响应速度。接下来考虑以±0.25A的方波电流给定信号（持续50个采样周期）进行测试，以评估实际系统响应和
+建模准确性，结果如下图所示。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/D轴正向方波闭环验证.png}
+        \caption{D轴正向方波闭环验证}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/D轴负向方波闭环验证.png}
+        \caption{D轴负向方波闭环验证}   
+    \end{minipage}
+\end{figure}
+
+据上图可知，由于存在采样噪声且进行闭环控制后系统对采样噪声的敏感度升高，导致实测电流波形有较大的波动。但在
+整体趋势上和仿真波形一致。
+正向方波中相关系数为99.88301\(\%\)，拟合优度95.15871\(\%\)；
+负向方波中相关系数为99.73266\(\%\)，拟合优度92.69211\(\%\)，均为较高水平。
+
+\subsubsection{Q轴频域矫正控制器设计与闭环验证}
+Q轴电流环的传递函数为：
+\begin{align*}
+    G_Q(z)&=(1-z^{-1})\mathcal{Z}[\cfrac{e^{-66.93\times10^{-6}s}}
+        {s(5.70125+2.16828\times 10^{-3}s)(120\times 10^{-9}s+1)}]\\
+        &=z^{-2}\cfrac{0.02805 + 0.0001482 z^{-1}+5.776\times 10^{-21}z^{-2}}{1- 0.8393 z^{-1}}
+\end{align*}
+
+与D轴同理，在电流环中串联积分环节\(I(z)\)以消除稳态误差，构造带积分环节的等价被控对象
+\(I(z)G_Q(z)\)，其开环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/带积分环节的Q轴等价被控对象开环频率特性.png}
+    \caption{带积分环节的Q轴等价被控对象开环频率特性}
+\end{figure}
+
+采用与D轴相同的一阶超前校正结构\(C_Q(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，设计指标保持一致：
+开环截止频率1000Hz，相位裕度不低于40°，在1000Hz处提供最多60°的相位补偿。\(\alpha\)和\(T\)
+的取值与D轴完全相同（\(\alpha=0.0718\)，\(T=5.9391\times 10^{-4}\)），仅需根据Q轴等价被控对象
+在1000Hz处的增益调整放大系数\(K\)。由于Q轴电感大于D轴（\(L_q=2.16828\textrm{mH}>L_d=1.86152\textrm{mH}\)），
+Q轴RL电路的转折频率更低，1000Hz处的增益衰减更大，因此需要略高的\(K\)值补偿。最终可得带积分的
+Q轴超前控制器：
+\begin{equation*}
+    C_Q(s)=\cfrac{14.7s+2.474\times 10^4}{4.265\times 10^{-5}s^2+s}
+\end{equation*}
+
+使用双线性变换离散化后得到：
+\begin{equation*}
+    C_Q(z)=\cfrac{6.808+0.7233z^{-1}-6.085z^{-2}}{1-1.123z^{-1}+0.1227z^{-2}}
+\end{equation*}
+
+经过超前控制后的开环频率特性和闭环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]
+    {图片/Q轴开-闭环频率特性.png}
+    \caption{Q轴开-闭环频率特性}
+\end{figure}
+
+矫正后，Q轴电流环的开环截止频率1000.00063Hz，相位裕度46.24331°满足设计要求。
+相位穿越频率1848.20511Hz，幅值裕度5.65228dB，闭环带宽2179.71785Hz。
+闭环前后的单位阶跃响应如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/Q轴开-闭环单位阶跃响应对比.png}
+    \caption{Q轴开-闭环单位阶跃响应对比}
+\end{figure}
+
+可以发现，Q轴闭环阶跃响应的超调量25.8\(\%\)，调节时间1.6ms，与D轴基本一致，这是因为
+两者采用了相同的频域设计指标和校正器结构。
+
+接下来以±0.25A的方波电流给定信号进行闭环跟踪测试。与D轴方波持续50个采样周期不同，
+Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁转矩而转动，方波持续时间过长将导致
+转速累积升高，反电动势\(\omega_e\Psi_m\)随之增大，削弱等效Q轴电压\(U_q'\)中的激励分量，
+迫使控制器持续增大\(U_q\)以维持跟踪，最终进入饱和区，使系统非线性显著增强而难以进行线性仿真分析。
+缩短方波持续时间可限制电机转角与转速的累积，将反电动势对等效RL电路模型的干扰控制在可忽略范围内。}。
+闭环验证结果如下图所示。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/Q轴正向方波闭环验证.png}
+        \caption{Q轴正向方波闭环验证}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/Q轴负向方波闭环验证.png}
+        \caption{Q轴负向方波闭环验证}
+    \end{minipage}
+\end{figure}
+
+由于Q轴方波持续时间极短（5个采样周期仅约0.33ms），远小于闭环调节时间（1.6ms），
+电流在每个脉冲内尚未到达稳态即被翻转，因此该测试实质上是暂态跟踪能力的验证，
+而非稳态方波跟踪。实测曲线与仿真曲线的趋势吻合良好，
+正向方波中相关系数为99.71872\(\%\)，拟合优度90.50733\(\%\)；
+负向方波中相关系数为99.42643\(\%\)，拟合优度85.36039\(\%\)，
+验证了Q轴频域校正控制器的瞬态响应有效性。
+
+\subsection{速度环被控对象辨识}
 
 \end{document}
