@@ -1,0 +1,138 @@
+\newpage
+\section{线性代数与离散系统分析基础知识}
+\subsection{线性代数知识补充}
+首先介绍\textbf{凯莱-哈密顿定理（Cayley-Hamilton Theorem）}。对于一个n阶的方阵A，其特征方程可以表示为：
+\begin{equation*}
+    \det(A-\lambda I) = 0 = a_0+a_1\lambda+a_2\lambda^2+\cdots+a_n\lambda^n=f(\lambda)
+\end{equation*}
+
+这是一条代数方程。而凯莱-哈密顿定理指出，方阵A同样会满足特征方程：
+\begin{equation*}
+    a_0+a_1A+a_2A^2+\cdots+a_nA^n=f(A)=0
+\end{equation*}
+
+对上式进行变换，可以得到：
+\begin{equation*}
+    A^n = -\cfrac{1}{a_n}(a_0+a_1A+a_2A^2+\cdots+a_{n-1}A^{n-1})
+\end{equation*}
+
+也就是说，\(A^n\)可以表示为\(A^0\sim A^{n-1}\)的线性组合结果。若对上式同时左乘A，则可以得到：
+\begin{equation*}
+    A^{n+1} = -\cfrac{1}{a_n}(a_0A+a_1A^2+a_2A^3+\cdots+a_{n-1}A^{n})
+\end{equation*}
+
+可知\(A^{n+1}\)可以表示为\(A^\sim A^{n}\)的线性组合结果。由于\(A^n\)可以表示为\(A^0\sim A^{n-1}\)的线性组合，
+因此\(A^{n+1}\)也可以表示为\(A^0\sim A^{n-1}\)的线性组合。根据数学归纳法可知：
+
+\textbf{对n阶方阵A，\(\forall k\ge n\)，\(A^k\)可以表示为\(A^0\sim A^{n-1}\)的线性组合。}
+
+其次介绍矩阵的\textbf{奇异值分解（Singular Value Decomposition,SVD）}，这是后续系统辨识最核心的知识。
+
+对于n阶方阵A，可以求取其秩为\(\textrm{r} (A)\)，秩的值表示了A矩阵具有多少个非零的特征值。
+但对于非方阵A，没有秩的概念，但可以进行奇异值分解。因此奇异值分解可以视为秩在任意维矩阵上的推广。
+
+根据方阵的特征值分解公式，方阵A可以表示为：
+\begin{equation*}
+    A = P\Lambda P^{-1}
+\end{equation*}
+
+其中\(P\)为特征向量矩阵，\(\Lambda\)为特征值组成的对角矩阵。奇异值分解说明任意矩阵A都可以表示为：
+\begin{equation}
+    A = U\Sigma V^T
+    \label{eq:奇异值分解}
+\end{equation}
+
+其中\(U\)为左奇异矩阵，\(\Sigma\)为奇异值组成的对角矩阵，\(V\)为右奇异矩阵。需要注意的是，奇异值是非负的，
+因为他表示矩阵在各个维度上的能量分布。
+
+最后介绍\textbf{托普利茨矩阵（Toeplitz Matrix）}，这在求解离散卷积方程中非常有用。托普利茨矩阵定义为
+\textbf{从左上到右下，每一个对称对角线上具有完全相同元素的矩阵}。比如一个四阶托普利茨矩阵为
+\(
+\mathcal{T} = 
+\begin{bmatrix}
+    4 & 1 & 0 & 2 \\
+    3 & 4 & 1 & 0 \\
+    2 & 3 & 4 & 1 \\
+    1 & 2 & 3 & 4 \\
+\end{bmatrix}
+\)。
+
+特殊地，如果一个托普利茨矩阵从左下到右上，每一个对称对角线上也具有相同的元素，则称为对称托普利茨矩阵。比如
+一个四阶的对称托普利茨矩阵为
+\(
+\mathcal{T} = 
+\begin{bmatrix}
+    4 & 3 & 2 & 1 \\
+    3 & 4 & 3 & 2 \\
+    2 & 3 & 4 & 3 \\
+    1 & 2 & 3 & 4 \\
+\end{bmatrix}
+\)。
+
+\subsection{离散系统知识补充}
+离散系统的状态空间方程与连续系统类似，可以表示为：
+\begin{equation}
+    \begin{cases}
+        x_{k+1} = A x_k + B u_k \\
+        y_k = C x_k + D u_k
+    \end{cases}
+    \label{eq:离散状态空间方程}
+\end{equation}
+
+利用状态空间方程\ref{eq:离散状态空间方程}，可以得到系统的传递函数：
+\begin{equation}
+    G(z)=C(zI-A)^{-1}B+D
+    \label{eq:离散传递函数}
+\end{equation}
+
+其中z为\(\mathcal{Z}\)变换的变量，与拉普拉斯变换的s对应，两者满足\(z=e^{Ts}\)，其中T表示离散系统的采样时间。
+
+一个系统的传递函数，就是其脉冲响应的拉普拉斯变换。同理，在离散系统中，其传递函数是脉冲响应序列的\(\mathcal{Z}\)变换。
+假设系统的脉冲响应序列为\(g_k\)，则其传递函数可以表示为：
+
+\begin{equation*}
+    G(z)=\sum_{k=0}^{\infty}g_kz^{-k}
+\end{equation*}
+
+而根据\ref{eq:离散传递函数}，可以使用类似于下式的无穷级数展开：
+\begin{equation*}
+    \cfrac{1}{1-x}=1+\sum_{k=1}^{\infty}x^k
+\end{equation*}
+
+对于\((zI-A)^{-1}\)，可以表示为\(z^{-1}(I-z^{-1}A)^{-1}\)。后者可以无穷级数展开得到：
+\begin{equation*}
+    (I-z^{-1}A)^{-1} =I+z^{-1}A+z^{-2}A^2+\cdots=\sum_{k=0}^{\infty}z^{-k}A^k
+\end{equation*}
+
+带入传递函数可得：
+\begin{equation*}
+    G(z)=C(z^{-1}\sum_{k=0}^{\infty}z^{-k}A^k)B+D=D+\sum_{k=0}^{\infty}CA^{k}Bz^{-(k+1)}=\sum_{k=0}^{\infty}g_kz^{-k}
+\end{equation*}
+
+因此脉冲响应序列满足：
+\begin{equation}
+    g_k = 
+    \begin{cases}
+        D & k=0 \\
+        CA^{k-1}B & k\ge 1
+    \end{cases}
+    \label{eq:脉冲响应序列}
+\end{equation}
+
+这也称为离散系统的\textbf{马尔科夫系数（Markov Coefficient）}。而根据凯莱-哈密顿定理，对于n阶方阵A（同时n也是系统阶次），
+\(\forall k\ge n\)，\(A^k\)可以表示为\(A^0\sim A^{n-1}\)的线性组合。因此可以得到离散系统一个重要的性质，即
+\textbf{n阶离散系统的脉冲响应序列只有前n个值是独立的，后续的值都可以被前n个值线性表示}。
+
+为了将这一个性质直观表示，进行进一步分析，可以构造离散系统的\textbf{汉克尔矩阵（Hankel Matrix）}。离散系统的汉克尔矩阵定义为：
+\begin{equation}
+    \mathcal{H} =
+    \begin{bmatrix}
+        g_1 & g_2 & \cdots & g_{n} \\
+        g_2 & g_3 & \cdots & g_{n+1} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        g_{n} & g_{n+1} & \cdots & g_{2n-1}
+    \end{bmatrix}
+    \label{eq:汉克尔矩阵}
+\end{equation}
+
+根据离散系统的特性，可知n阶离散系统的汉克尔矩阵是满秩的。如果对汉克尔矩阵进行奇异值分解，也应该得到n个非零的奇异值。

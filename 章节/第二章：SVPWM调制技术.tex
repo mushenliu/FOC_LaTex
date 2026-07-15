@@ -1,0 +1,453 @@
+\newpage
+\section{SVPWM调制技术}
+\subsection{SVPWM基本分析}
+
+经过第一章的分析，可以发现，在同步旋转坐标系下对电机进行分析是非常简单的。但是
+同步旋转坐标系的电压$U_d,U_q$是一种数学变量，其并不真实可控。大部分永磁同步电机
+控制电路为下图所示的三相全桥逆变电路，能被直接控制的只有自然坐标系下的三相电压
+$U_a,U_b,U_c$，因此如何将希望得到的$U_d,U_q$，转换为可以直接控制的
+$U_a,U_b,U_c$，就是调制技术关注的点。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]
+    {图片/三相全桥逆变电路.png}
+    \caption{三相全桥逆变电路}
+    \label{fig:三相全桥逆变电路}
+\end{figure}
+
+SVPWM（Space Vector Pulse Width Modulation，空间矢量脉宽调制）
+是一种针对三相全桥的PWM调制技术，其基本思想是将希望得到的电压矢量用多个基本矢量
+来合成。基本矢量可以用$U_x(S_A,S_B, S_C)$表示，其中$S_A,S_B,S_C$为三相全桥的
+开关状态，而$x=4S_A+2S_B+S_C$为基本矢量的索引。
+如$A$相导通，$B,C$相截止，就可以表示为$U_4(1,0,0)$。
+
+根据三相全桥各相的开关状态，基本矢量可以分为两种有效矢量和两种零矢量共四类。
+
+第一种有效矢量包括$U_4(1,0,0),U_2(0,1,0),U_1(0,0,1)$三个基本矢量，特点是单相
+上桥导通、两相下桥截止。此时导通的上桥流过的电流就是母线电流。
+
+第二种有效矢量包括$U_3(0,1,1),U_5(1,0,1),U_6(1,1,0)$三个基本矢量，特点是两相
+上桥导通、一相下桥截止。此时导通的下桥流过的电流就是母线电流。
+
+另外还有两种零矢量为$U_0(0,0,0)$和$U_7(1,1,1)$，分别是三相截止和三相导通。
+此时通过MOSFET、IGBT等功率器件的寄生/续流二极管形成环流。
+
+将上述的基本矢量在两相静止坐标系种表示如下图所示。可以发现，平面被八个基本电压
+矢量分割为了六个扇区。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]
+    {图片/SVPWM基本矢量和扇区划分图.png}
+·    \caption{SVPWM基本矢量和扇区划分图}
+    \label{fig:SVPWM基本矢量和扇区划分图}
+\end{figure}
+
+根据等幅值克拉克变换\eqref{eq:克拉克变换}可得基本矢量幅值为
+$\cfrac{2}{3}U_{dc}$。
+根据合成矢量的规则，任一电压矢量都可以用相邻60°的两个基本矢量和零矢量得到
+
+接下来以第I扇区为例，讨论合成矢量的幅值要求。第I扇区可以使用有效矢量
+$U_4(1,0,0)$和$U_6(1,1,0)$与零矢量$U_0(0,0,0)$和$U_7(1,1,1)$。
+为了获取最大的电压矢量，假设零矢量不参与合成。在一个PWM周期内，k时间占比
+由$U_4(1,0,0)$作用，而1-k时间占比由$U_6(1,1,0)$作用。
+
+用复数表示合成矢量，则合成矢量可以表示为
+$U=\cfrac{2}{3}U_{dc}(k+\cfrac 12(1-k)+j\cfrac{\sqrt{3}}{2}(1-k))$
+其中$j$表示虚数单位。该合成矢量的幅值为
+$\cfrac{2}{3}U_{dc}\sqrt{(k+\cfrac 12-\cfrac 12k)^2+\cfrac 34(1-k)^2}
+=\cfrac 23U_{dc}\sqrt{k^2-k+1}$
+，其中作用时间占比$k\in [0,1]$。
+
+根据二次函数相关知识可得当$k=\cfrac 12$时合成矢量幅值最小，此时合成矢量
+幅值为$\cfrac{1}{\sqrt 3}U_{dc}$。这就是可以完成线性调制的SVPWM电压极限圆
+半径（正六边形内切圆）。在电压极限圆内，任何电压矢量都可以用基本矢量合成得到。
+而超出电压极限圆范围，但只要处于正六边形范围内，也都可以用基本矢量合成得到。
+
+由于正六边形范围的判断较为复杂，因此一般认为SVPWM的调制极限就是电压极限圆，
+也即满足
+\begin{equation}
+    U_d^2+U_q^2\le \cfrac{U_{dc}^2}{3}
+    \label{eq:SVPWM电压极限圆}
+\end{equation}
+
+根据电压极限圆可知，SVPWM调制法的相电压最大利用率为
+$\cfrac{\frac{U_{dc}}{\sqrt 3}}{U_{dc}}\times100\%=57.7\%$，
+而线电压最大利用率为
+$\sqrt{3}\times \cfrac{\frac{U_{dc}}{\sqrt 3}}{U_{dc}}
+\times100\%= 100\%$。
+
+\subsection{SVPWM调制法}
+
+SVPWM调制法是基本的SVPWM实现方法，其物理含义直观，但是程序运行效率较低，
+这是因为需要经过扇区判断、基本矢量作用时间计算、三相占空比计算三个步骤。
+
+扇区判断的主要任务是，将给定的$U_d,U_q$，通过\eqref{eq:帕克逆变换}的帕克
+逆变换公式得到两相静止坐标系下的$U_{\alpha},U_{\beta}$，判断合成矢量
+所在的扇区。
+
+根据基本矢量图\ref{fig:SVPWM基本矢量和扇区划分图}，可以得到合成矢量
+落在特定扇区的充要条件。
+\begin{itemize}
+    \item 
+    扇区I：$U_{\alpha}>0,{U_{\beta}>0},
+    |\cfrac{U_{\beta}}{U_{\alpha}}|<\sqrt 3$
+    第三个条件也可以写为
+    $\begin{cases}\cfrac 12(\sqrt{3}U_{\alpha}-U_{\beta})>0\\
+        \cfrac 12(-\sqrt{3}U_{\alpha}-U_{\beta})<0\end{cases}$
+    \item 
+    扇区II：${U_{\beta}>0},|\cfrac{U_{\beta}}{U_{\alpha}}|>\sqrt 3$
+    第三个条件也可以写为
+    $\begin{cases}\cfrac 12(\sqrt{3}U_{\alpha}-U_{\beta})<0\\
+        \cfrac 12(-\sqrt{3}U_{\alpha}-U_{\beta})<0\end{cases}$
+    \item 
+    扇区III：$U_{\alpha}<0,{U_{\beta}>0},
+    |\cfrac{U_{\beta}}{U_{\alpha}}|<\sqrt 3$
+    第三个条件也可以写为
+    $\begin{cases}\cfrac 12(\sqrt{3}U_{\alpha}-U_{\beta})<0\\
+        \cfrac 12(-\sqrt{3}U_{\alpha}-U_{\beta})>0\end{cases}$
+    \item 
+    扇区IV：$U_{\alpha}<0,{U_{\beta}<0},
+    |\cfrac{U_{\beta}}{U_{\alpha}}|<\sqrt 3$
+    第三个条件也可以写为
+    $\begin{cases}\cfrac 12(\sqrt{3}U_{\alpha}-U_{\beta})<0\\
+        \cfrac 12(-\sqrt{3}U_{\alpha}-U_{\beta})>0\end{cases}$
+    \item 
+    扇区V：${U_{\beta}<0},|\cfrac{U_{\beta}}{U_{\alpha}}|>\sqrt 3$
+    第三个条件也可以写为
+    $\begin{cases}\cfrac 12(\sqrt{3}U_{\alpha}-U_{\beta})>0\\
+        \cfrac 12(-\sqrt{3}U_{\alpha}-U_{\beta})>0\end{cases}$
+    \item 
+    扇区VI：$U_{\alpha}>0,{U_{\beta}<0},
+    |\cfrac{U_{\beta}}{U_{\alpha}}|<\sqrt 3$
+    第三个条件也可以写为
+    $\begin{cases}\cfrac 12(\sqrt{3}U_{\alpha}-U_{\beta})>0\\
+        \cfrac 12(-\sqrt{3}U_{\alpha}-U_{\beta})<0\end{cases}$
+\end{itemize}
+
+可以发现上述条件判断都可以用
+$\begin{cases}A_0=U_{\beta}
+    \\A_1=\cfrac{\sqrt{3}}2U_{\alpha}-\cfrac{1}{2}U_{\beta}
+    \\A_2=-\cfrac{\sqrt{3}}2U_{\alpha}-\cfrac 12U_{\beta}
+\end{cases}$
+的符号判断来概括。若定义上述判断式结果大于零为真（1），小于零为假（0），
+也就是满足$X_i=\begin{cases}1&A_i>0\\0&A_i<0\end{cases}$
+则可以定义逻辑向量$(X_2,X_1,X_0)$，索引值为$N'=4X_2+2X_1+X_0$。索引值的
+可取值为$1,2,3,4,5,6$，分别对应六种扇区，记扇区号为$N$，判断表如下。
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        扇区号N&充要条件&逻辑向量&索引值N'\\
+        \hline
+        I&
+        $\begin{cases}-\sqrt{3}U_{\alpha}-U_{\beta}<0\\
+            \sqrt{3}U_{\alpha}-U_{\beta}>0\\
+            U_{\beta}>0\end{cases}$&
+        (0,1,1)&3\\
+        \hline
+        II&
+        $\begin{cases}-\sqrt{3}U_{\alpha}-U_{\beta}<0\\
+            \sqrt{3}U_{\alpha}-U_{\beta}<0\\
+            U_{\beta}>0\end{cases}$&
+        (0,0,1)&1\\
+        \hline
+        III&
+        $\begin{cases}-\sqrt{3}U_{\alpha}-U_{\beta}>0\\
+            \sqrt{3}U_{\alpha}-U_{\beta}<0
+            \\U_{\beta}>0\end{cases}$&
+        (1,0,1)&5\\
+        \hline
+        IV&
+        $\begin{cases}-\sqrt{3}U_{\alpha}-U_{\beta}>0\\
+            \sqrt{3}U_{\alpha}-U_{\beta}<0\\
+            U_{\beta}<0\end{cases}$&
+        (1,0,0)&4\\
+        \hline
+        V&
+        $\begin{cases}-\sqrt{3}U_{\alpha}-U_{\beta}>0\\
+            \sqrt{3}U_{\alpha}-U_{\beta}>0\\
+            U_{\beta}<0\end{cases}$&
+        (1,1,0)&6\\
+        \hline
+        VI&
+        $\begin{cases}-\sqrt{3}U_{\alpha}-U_{\beta}<0\\
+            \sqrt{3}U_{\alpha}-U_{\beta}>0\\
+            U_{\beta}<0\end{cases}$&
+        (0,1,0)&2\\
+        \hline
+    \end{tabular}
+    \caption{扇区判断表}
+    \label{tab:扇区判断表}
+\end{table}
+
+接下来考虑基本矢量的作用时间计算。假设一个PWM周期为$T_s$。用于合成
+矢量的两个基本有效矢量分别$V_x$（角度为$\theta_k$，作用时间$T_x$）
+和$V_y$（角度为$\theta_k+\cfrac{\pi}{3}$，作用时间$T_y$）。其余时间
+$T_0=T_s-T_x-T_y$为零矢量作用。
+
+有效矢量在两相静止坐标系$\alpha-\beta$下的坐标可以表示为
+$V_x=\cfrac{2}{3}U_{dc}(\cos\theta_k,\sin\theta_k)$和
+$V_y=\cfrac{2}{3}U_{dc}(\cos\theta_k+\cfrac{\pi}{3},
+\sin\theta_k+\cfrac{\pi}{3})$。
+因此根据期望合成矢量的坐标$(U_{\alpha},U_{\beta})$，可以列写得到方程
+\begin{equation*}
+    \begin{cases}
+        U_{\alpha}T_s=\cfrac{2}{3}U_{dc}(T_x\cos\theta_k+
+        T_y\cos(\theta_k+\cfrac{\pi}{3}))
+        \\U_{\beta}T_s=\cfrac{2}{3}U_{dc}(T_x\sin\theta_k+
+        T_y\sin(\theta_k+\cfrac{\pi}{3}))
+    \end{cases}
+\end{equation*}
+
+用矩阵可以表示为
+\begin{equation*}
+    \begin{bmatrix}
+        \cos\theta_k&\cos(\theta_k+\cfrac{\pi}{3})\\
+        \sin\theta_k&\sin(\theta_k+\cfrac{\pi}{3})
+    \end{bmatrix}
+    \begin{bmatrix}T_x\\T_y\end{bmatrix}
+    =\cfrac{3T_s}{2U_{dc}}
+    \begin{bmatrix}U_\alpha\\U_\beta\end{bmatrix}
+\end{equation*}
+
+方程的解为
+\begin{equation*}
+    \begin{bmatrix}T_x\\T_y\end{bmatrix}
+    =
+    \begin{bmatrix}
+        \cos\theta_k&\cos(\theta_k+\cfrac{\pi}{3})\\
+        \sin\theta_k&\sin(\theta_k+\cfrac{\pi}{3})
+    \end{bmatrix}^{-1}
+    \cfrac{3T_s}{2U_{dc}}
+    \begin{bmatrix}U_\alpha\\U_\beta\end{bmatrix}
+    =
+    \cfrac{\sqrt 3T_s}{U_{dc}}
+    \begin{bmatrix}
+        \sin(\theta_k+\cfrac{\pi}{3})
+        &-\cos(\theta_k+\cfrac{\pi}{3})\\
+        -\sin\theta_k&\cos\theta_k
+    \end{bmatrix}
+    \begin{bmatrix}U_\alpha\\U_\beta\end{bmatrix}
+\end{equation*}
+
+上式中$\theta_k$中由扇区号$N$决定，即
+$\theta_k=(N-1)\times\cfrac{\pi}{3},N=1\sim6$。并且在前述扇区判断过程中
+已经定义了判断扇区用到的三个表达式 
+$\begin{cases}A_0=U_{\beta}
+    \\A_1=\cfrac{\sqrt{3}}2U_{\alpha}-\cfrac{1}{2}U_{\beta}
+    \\A_2=-\cfrac{\sqrt{3}}2U_{\alpha}-\cfrac 12U_{\beta}
+\end{cases}$，
+其也是简化计算基本矢量作用时间的核心。定义基本矢量作用时间系数为
+\begin{equation*}
+    K=\cfrac{\sqrt 3T_s}{U_{dc}}
+\end{equation*}
+
+那么各个扇区下作用时间可以通过查表实现：
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        扇区号N&作用时间$T_x$&作用时间$T_y$\\
+        \hline
+        I&$KA_1$&$KA_0$\\
+        \hline
+        II&$-KA_2$&$-KA_1$\\
+        \hline
+        III&$KA_0$&$KA_2$\\
+        \hline
+        IV&$-KA_1$&$-KA_0$\\
+        \hline
+        V&$KA_2$&$KA_1$\\
+        \hline
+        VI&$-KA_0$&$-KA_2$\\
+        \hline
+    \end{tabular}
+    \caption{基本矢量作用时间计算表（$T_x,T_y$表示）}
+    \label{tab:基本矢量作用时间计算表(Tx,Ty表示)}
+\end{table}
+
+两个基本矢量$V_x,V_y$的关系是$V_y$总是超前$V_x$60°。但在实际控制波形中
+基本矢量的作用顺序为下式表示的七段式SVPWM：
+\begin{equation*}
+    U_0(0,0,0)\to
+    \begin{cases}U_{4}(1,0,0)\\U_{2}(0,1,0)\\U_{1}(0,0,1)\end{cases}
+    \to
+    \begin{cases}U_{6}(1,1,0)\\U_{5}(1,0,1)\\U_{3}(0,1,1)\end{cases}
+    \to
+    U_7(1,1,1)
+    \to
+    \begin{cases}U_{6}(1,1,0)\\U_{5}(1,0,1)\\U_{3}(0,1,1)\end{cases}、
+    \to
+    \begin{cases}U_{4}(1,0,0)\\U_{2}(0,1,0)\\U_{1}(0,0,1)\end{cases}
+    \to
+    U_0(0,0,0)
+\end{equation*}
+
+也即总是单相上桥导通矢量先出现，两相上桥导通矢量后出现
+因此根据各个扇区的$V_x,V_y$与单相/两相上桥导通矢量的对应关系，可以将
+表\ref{tab:基本矢量作用时间计算表(Tx,Ty表示)}中的基本矢量作用时
+间$T_x$和$T_y$，改写为用单相上桥导通矢量作用时间$T_{U1}$
+和两相上桥导通矢量作用时间$T_{U2}$表示的计算表
+\ref{tab:基本矢量作用时间计算表(TU1,TU2表示)}。
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        扇区号N&作用时间$T_{U1}$&作用时间$T_{U2}$\\
+        \hline
+        I&$KA_1$&$KA_0$\\
+        \hline
+        II&$-KA_1$&$-KA_0$\\
+        \hline
+        III&$KA_0$&$KA_2$\\
+        \hline
+        IV&$-KA_0$&$-KA_1$\\
+        \hline
+        V&$KA_2$&$KA_1$\\
+        \hline
+        VI&$-KA_2$&$-KA_1$\\
+        \hline
+    \end{tabular}
+    \caption{基本矢量作用时间计算表（$T_{U1},T_{U2}$表示）}
+    \label{tab:基本矢量作用时间计算表(TU1,TU2表示)}
+\end{table}
+
+最后根据基本矢量作用时间表
+\ref{tab:基本矢量作用时间计算表(TU1,TU2表示)}以及PWM周期$T_s$，
+可以得到零矢量作用时间$T_{0}=T_s-T_{U1}-T_{U2}$。
+
+接下来进行三相占空比的计算。以第I扇区为例，其参与合成的基本矢量为
+$U_4(1,0,0)$，$U_6(1,1,0)$，$U_0(0,0,0)$和$U_7(1,1,1)$。
+可以发现，在第I扇区，C相只参与零矢量合成，
+B相参与两相上桥导通基本矢量和零矢量合成，
+而A相参与单相、两相上桥导通基本矢量和零矢量的合成。
+通过分析各个扇区内每一相的矢量合成参与情况，可以得到ABC三相在其中的角色。
+因此只需要关注如何计算出：只参与零矢量合成相的占空比$D_0$、
+参与两相上桥导通基本矢量和零矢量合成相的占空比$D_1$、
+参与单相、两相上桥导通基本矢量和零矢量合成相的占空比$D_2$
+三个占空比即可。
+
+对于$D_0$，其导通时间就是$U_7(1,1,1)$的导通时间。而在七段式SVPWM中
+$U_7(1,1,1)$的导通时间与$U_0(0,0,0)$的导通时间相同，均为$\cfrac{1}{2}T_0$
+。考虑到PWM周期为$T_s$，所以$D_0=\cfrac{T_0}{2T_s}$。
+
+对于$D_1$，相较于$D_0$相，多了两相上桥导通的作用时间。因此占空比有
+$D_1=D_0+\cfrac{T_{U2}}{T_s}$。
+
+对于$D_2$，相较于$D_1$相，多了单相上桥导通的作用时间。因此占空比有
+$D_2=D_1+\cfrac{T_{U1}}{T_s}$。
+
+最后根据每个扇区各相的参与情况，得到三相占空比计算表
+\ref{tab:三相占空比计算表}。
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        扇区号N&A相占空比&B相占空比&C相占空比\\
+        \hline
+        I&$D_2$&$D_1$&$D_0$\\
+        \hline
+        II&$D_1$&$D_2$&$D_0$\\
+        \hline
+        III&$D_0$&$D_2$&$D_1$\\
+        \hline
+        IV&$D_0$&$D_1$&$D_2$\\
+        \hline
+        V&$D_1$&$D_0$&$D_2$\\
+        \hline
+        VI&$D_2$&$D_0$&$D_1$\\
+        \hline
+    \end{tabular}
+    \caption{三相占空比计算表}
+    \label{tab:三相占空比计算表}
+\end{table}
+
+综上所述，SVPWM调制法的步骤为：扇区判断（表\ref{tab:扇区判断表}）
+、基本矢量作用时间计算（表\ref{tab:基本矢量作用时间计算表(TU1,TU2表示)}）
+、三相占空比计算（表\ref{tab:三相占空比计算表}）三个步骤。期间需要大量查表
+，程序执行较为繁琐。
+
+\subsection{SVPWM计算法}
+
+为了克服SVPWM调制法中需要大量查表的问题，可以从结果反推如何通过
+计算的方法实现SVPWM调制。
+
+在恒定电角速度情况下，取直流电压$U_{dc}=12V$，期望
+直轴电压$U_d=0V$，交轴电压$U_q=3V$确保位于电压极限圆，
+则输出的三相电压（三相占空比乘直流电压）如下图\ref{fig:SVPWM电压}所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/SVPWM电压波形.png}
+    \caption{SVPWM电压波形}
+    \label{fig:SVPWM电压}
+\end{figure}
+
+可以发现SVPWM波形为类马鞍波。若以SPWM调制的正弦波为基波，则SVPWM是在
+正弦基波基础上叠加了一个基波频率为正弦基波频率三倍的波形。
+为了便于观察，取A相电压波形，将直接通过克拉克-帕克逆变换的原始波形、
+通过SVPWM调制后的相电压波形（去除直流分量）相比，并且用SVPWM调制波形
+减去原始波形，观察注入波形的样式，
+如下图\ref{fig:A相电压波形}所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/A相电压波形.png}
+    \caption{A相电压波形}
+    \label{fig:A相电压波形}
+\end{figure}
+
+SVPWM调制通过在基波基础上注入三倍频率的三角波实现了
+电压利用率的提高，这是SVPWM电压利用率远超SPWM的关键所在。
+由于该三角波在相电压中注入且基波频率恰好是正弦波频率的三倍，
+因此在线电压中会相互抵消，使得线电压波形仍为正弦波。
+由于该三角波注入没有影响线电压谐波，所以将该三角波称为零序分量。
+
+零序分量$U_0$与克拉克-帕克逆变换得到的三相电压波形如下图
+\ref{fig:原始相电压波形与零序分量波形}所示。
+可以发现，零序分量在自然换相点达到极值，在任意一相过零点归零，
+并且全程线性变化。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/原始相电压波形与零序分量波形.png}
+    \caption{原始相电压波形与零序分量波形}
+    \label{fig:原始相电压波形与零序分量波形}
+\end{figure}
+
+设克拉克-帕克逆变换得到的三相电压为$U_a,U_b,U_c$。
+其中的最大值为$U_{\max}=\max(U_a,U_b,U_c)$
+最小值为$U_{\min}=\min(U_a,U_b,U_c)$
+则零序分量将会满足（具体严格的推导个人能力不足，在此省略）
+\begin{equation}
+    U_0=-\cfrac 12(U_{\max}+U_{\min})
+    \label{eq:零序分量表达式}
+\end{equation}
+
+通过零序分量注入后，SVPWM调制相电压表达式为
+\begin{equation*}
+    \begin{cases}
+        U_a'&=U_a+U_0\\
+        U_b'&=U_b+U_0\\
+        U_c'&=U_c+U_0
+    \end{cases}
+\end{equation*}
+
+因此SVPWM计算法的三相占空比表示为
+\begin{equation}
+    \begin{cases}
+        D_A=\cfrac 12+\cfrac{U_a'}{U_{dc}}=
+        \cfrac{1}{2}+\cfrac{U_a+U_0}{U_{dc}}
+        \\
+        D_B=\cfrac 12+\cfrac{U_b'}{U_{dc}}=\cfrac{1}{2}+
+        \cfrac{U_b+U_0}{U_{dc}}
+        \\
+        D_C=\cfrac 12+\cfrac{U_c'}{U_{dc}}=\cfrac{1}{2}+
+        \cfrac{U_c+U_0}{U_{dc}}
+    \end{cases}\
+    \label{eq:SVPWM占空比表达式}
+\end{equation}
+
+可见通过SVPWM计算法，大大省略了调制法需要的查表运算，无需
+程序分支，只需要按照公式\eqref{eq:零序分量表达式}
+和\eqref{eq:SVPWM占空比表达式}计算即可。

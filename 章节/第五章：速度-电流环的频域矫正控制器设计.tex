@@ -1,0 +1,331 @@
+\newpage
+\section{速度-电流环的频域矫正控制器设计}
+\subsection{电流环的频域矫正控制器设计}
+\subsubsection{D轴频域矫正控制器设计与闭环验证}
+D轴电流环的传递函数为：
+\begin{align*}
+    G_D(z)&=(1-z^{-1})\mathcal{Z}[\cfrac{e^{-66.93\times10^{-6}s}}
+        {s(5.70125+1.86152\times 10^{-3}s)(120\times 10^{-9}s+1)}]\\
+        &=z^{-2}\cfrac{0.03222 + 0.0001666 z^{-1} + 4.22\times 10^{-21}z^{-2}}{1- 0.8154 z^{-1}}
+\end{align*}
+
+对于电流环控制，为了实现无差跟踪，需要加入积分环节\(\cfrac{1}{s}\)，使用双线性变换可得在电流环采样周期\(T_s=66.67\)
+us下的离散化形式为：
+\begin{equation*}
+    I(z)=\cfrac{T_s}{2}\times\cfrac{1+z^{-1}}{1-z^{-1}}=3.332\times 10^{-5}\times\cfrac{1+z^{-1}}{1-z^{-1}}
+\end{equation*}
+
+可以构造带积分环节的等价被控对象\(I(z)G_D(z)\)，其开环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/带积分环节的D轴等价被控对象开环频率特性.png}
+    \caption{带积分环节的D轴等价被控对象开环频率特性}
+\end{figure}
+
+采用一阶超前校正控制\(C_D(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，开环截止频率设定为1000Hz，以不低于40°的相位裕度为目标，
+在1000Hz处提供最多60°的相位补偿，可以计算得到：
+\begin{equation*}
+    \begin{cases}
+        \alpha = \cfrac{1-\sin(60°)}{1+\sin(60°)}=0.0718\\
+        T = \cfrac{1}{2\pi\times 1000\sqrt{\alpha}} = 5.9391\times 10^{-4}
+    \end{cases}
+\end{equation*}
+
+最后根据等价被控对象在1000Hz处的增益，调整放大系数K，最终可得带积分的D轴超前控制器：
+\begin{equation*}
+    C_D(s)=\cfrac{12.95s+2.18\times 10^4}{4.265\times 10^{-5}s^2+s}
+\end{equation*}
+
+使用双线性变换离散化后得到：
+\begin{equation*}
+    C_D(z)=\cfrac{5.998+0.6373z^{-1}-5.361z^{-2}}{1-1.123z^{-1}+0.1227z^{-2}}
+\end{equation*}
+
+经过超前控制后的开环频率特性和闭环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]
+    {图片/D轴开-闭环频率特性.png}
+    \caption{D轴开-闭环频率特性}
+\end{figure}
+
+矫正后，D轴电流环的开环截止频率1000.00073Hz，相位裕度49.46547°满足设计要求。相位穿越频率1883.94275Hz，
+幅值裕度5.69334dB，闭环带宽2213.62137Hz。闭环前后的单位阶跃响应如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/D轴开-闭环单位阶跃响应对比.png}
+    \caption{D轴开-闭环单位阶跃响应对比}
+\end{figure}
+
+可以发现，通过带积分环节的超前校正控制器，使得能够无差跟踪给定信号，超调量21.3\(\%\)，调节时间为1.6ms，用一定的超调
+换来了极快的响应速度。接下来考虑以±0.25A的方波电流给定信号（持续50个采样周期）进行测试，以评估实际系统响应和
+建模准确性，结果如下图所示。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/D轴正向方波闭环验证.png}
+        \caption{D轴正向方波闭环验证}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/D轴负向方波闭环验证.png}
+        \caption{D轴负向方波闭环验证}   
+    \end{minipage}
+\end{figure}
+
+据上图可知，由于存在采样噪声且进行闭环控制后系统对采样噪声的敏感度升高，导致实测电流波形有较大的波动。但在
+整体趋势上和仿真波形一致。
+正向方波中相关系数为99.88301\(\%\)，拟合优度95.15871\(\%\)；
+负向方波中相关系数为99.73266\(\%\)，拟合优度92.69211\(\%\)，均为较高水平。
+
+\subsubsection{Q轴频域矫正控制器设计与闭环验证}
+Q轴电流环的传递函数为：
+\begin{align*}
+    G_Q(z)&=(1-z^{-1})\mathcal{Z}[\cfrac{e^{-66.93\times10^{-6}s}}
+        {s(5.70125+2.16828\times 10^{-3}s)(120\times 10^{-9}s+1)}]\\
+        &=z^{-2}\cfrac{0.02805 + 0.0001482 z^{-1}+5.776\times 10^{-21}z^{-2}}{1- 0.8393 z^{-1}}
+\end{align*}
+
+与D轴同理，在电流环中串联积分环节\(I(z)\)以消除稳态误差，构造带积分环节的等价被控对象
+\(I(z)G_Q(z)\)，其开环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/带积分环节的Q轴等价被控对象开环频率特性.png}
+    \caption{带积分环节的Q轴等价被控对象开环频率特性}
+\end{figure}
+
+采用与D轴相同的一阶超前校正结构\(C_Q(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，设计指标保持一致：
+开环截止频率1000Hz，相位裕度不低于40°，在1000Hz处提供最多60°的相位补偿。\(\alpha\)和\(T\)
+的取值与D轴完全相同（\(\alpha=0.0718\)，\(T=5.9391\times 10^{-4}\)），仅需根据Q轴等价被控对象
+在1000Hz处的增益调整放大系数\(K\)。由于Q轴电感大于D轴（\(L_q=2.16828\textrm{mH}>L_d=1.86152\textrm{mH}\)），
+Q轴RL电路的转折频率更低，1000Hz处的增益衰减更大，因此需要略高的\(K\)值补偿。最终可得带积分的
+Q轴超前控制器：
+\begin{equation*}
+    C_Q(s)=\cfrac{14.7s+2.474\times 10^4}{4.265\times 10^{-5}s^2+s}
+\end{equation*}
+
+使用双线性变换离散化后得到：
+\begin{equation*}
+    C_Q(z)=\cfrac{6.808+0.7233z^{-1}-6.085z^{-2}}{1-1.123z^{-1}+0.1227z^{-2}}
+\end{equation*}
+
+经过超前控制后的开环频率特性和闭环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]
+    {图片/Q轴开-闭环频率特性.png}
+    \caption{Q轴开-闭环频率特性}
+\end{figure}
+
+矫正后，Q轴电流环的开环截止频率1000.00063Hz，相位裕度46.24331°满足设计要求。
+相位穿越频率1848.20511Hz，幅值裕度5.65228dB，闭环带宽2179.71785Hz。
+闭环前后的单位阶跃响应如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/Q轴开-闭环单位阶跃响应对比.png}
+    \caption{Q轴开-闭环单位阶跃响应对比}
+\end{figure}
+
+可以发现，Q轴闭环阶跃响应的超调量25.8\(\%\)，调节时间1.6ms，与D轴基本一致，这是因为
+两者采用了相同的频域设计指标和校正器结构。
+
+接下来以±0.25A的方波电流给定信号进行闭环跟踪测试。与D轴方波持续50个采样周期不同，
+Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁转矩而转动，方波持续时间过长将导致
+转速累积升高，反电动势\(\omega_e(\psi_m+L_di_d)\)随之增大，削弱等效Q轴电压\(U_q'\)中的激励分量，
+迫使控制器持续增大\(U_q\)以维持跟踪，最终进入饱和区，使系统非线性显著增强而难以进行线性仿真分析。
+缩短方波持续时间可限制电机转角与转速的累积，将反电动势对等效RL电路模型的干扰控制在可忽略范围内。}。
+闭环验证结果如下图所示。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/Q轴正向方波闭环验证.png}
+        \caption{Q轴正向方波闭环验证}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/Q轴负向方波闭环验证.png}
+        \caption{Q轴负向方波闭环验证}
+    \end{minipage}
+\end{figure}
+
+由于Q轴方波持续时间极短（5个采样周期仅约0.33ms），远小于闭环调节时间（1.6ms），
+电流在每个脉冲内尚未到达稳态即被翻转，因此该测试实质上是暂态跟踪能力的验证，
+而非稳态方波跟踪。实测曲线与仿真曲线的趋势吻合良好，
+正向方波中相关系数为99.71872\(\%\)，拟合优度90.50733\(\%\)；
+负向方波中相关系数为99.42643\(\%\)，拟合优度85.36039\(\%\)，
+验证了Q轴频域校正控制器的瞬态响应有效性。
+
+\subsection{速度环辨识理论分析}
+虽然前文已经完成了Q轴电流环的闭环校正，但在速度环辨识中并未直接以电流给定\(i_q^*\)作为激励
+输入。其原因是Q轴电流控制器\(C_Q(z)\)中含有积分环节——若以\(i_q^*\)
+\footnote{用上标*表示对某个物理量的给定/期望（如\(i_d^*,i_q^*,n^*\)），无上标*的表示实际值
+（如\(i_d,i_q,n\)），这是运动控制领域的常用做法。}
+替代\(U_q\)作为输入，辨识过程中积分器将持续累积\(i_q^*\)与实际\(i_q\)之间的跟踪误差并迅速
+进入饱和区，使系统非线性显著增强，违背线性辨识的基本假设。因此，速度环的辨识仍以\(U_q\)作为可操作变量。
+
+在空载情况下，电机的机械部分一般被建模为带有与速度成正比的粘滞摩擦环节，即从电磁转矩到转速的传递函数为：
+\begin{equation*}
+    G_m(s)=\cfrac{n(s)}{T_e(s)}=\cfrac{1}{B+Js}
+\end{equation*}
+
+但是由于电机的机械部分非线性因素远超电气部分，上述假设在实际中往往无法成立分析。因此在这里将机械部分视为一个
+阶次不定的系统，在特定工作点附近的局部线性化传递函数为\(G_m(s)\)
+
+在\(i_d^*=0\)的条件下，\(U_d\)用于维持理想化的\(i_d=0\)条件，而\(U_q\)用于控制\(i_q\)，实现转矩环和速度环控制。
+此时电磁转矩为\(T_e=\cfrac{3}{2}p\psi_mi_q\propto i_q\)为增益环节。而Q轴反电动势为
+\(E=\omega_e(\psi_m+L_di_d)\)，在\(i_d=0\)时可以简化为\(E=\omega_e\psi_m\propto \omega_e\)也是线性环节。
+考虑电角速度\(\omega_e\)与转速\(n\)满足\(\omega_e=\cfrac{\pi}{30}np\)，因此反电动势可以表示为
+\(E=\cfrac{\pi}{30}np\psi_m\propto n\)。
+
+因此可以得到从\(U_q\)到\(n\)在\(i_d=0\)的理想化假设下系统框图：
+\begin{center}
+\begin{tikzpicture}[auto, node distance=3cm, >=latex']
+    % 样式定义
+    \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=5em, align=center]
+    \tikzstyle{sum} = [draw, circle, node distance=1.5cm, minimum size=1.2em, inner sep=0pt]
+    \tikzstyle{input} = [coordinate]
+    \tikzstyle{output} = [coordinate]
+
+    % 放置节点
+    \node [input, name=input] {};
+    \node [sum, right of=input] (sum) {};
+    \node [block, right of=sum] (RL) {\(\cfrac{1}{R_s+L_q s}\)};
+    \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_m\)};
+    \node [block, right of=K] (Mech) {\(G_m(s)\)};
+    \node [output, right of=Mech] (output) {};
+    \node [block, below of=K, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
+
+    \draw [->] (input) -- node {\(U_q(s)\)} (sum);
+    \draw [->] (sum) -- node {\(U_q'(s)\)} (RL);
+    \draw [->] (RL) -- node {\(i_q(s)\)} (K);
+    \draw [->] (K) -- node {\(T_e(s)\)} (Mech);
+    \draw [->] (Mech) -- node [name=y] {\(n(s)\)} (output);
+    \draw [->] (y) |- (Kf);          
+    \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.5] {\(E(s)\)} (sum);
+\end{tikzpicture}
+\end{center}
+
+根据上图可知，在\(i_d=0\)的理想化假设下，Q轴电流和转速环由于反电动势构成了物理特性导致的闭环，使得被迫在闭环情况下
+进行辨识，这会对系统辨识产生很大的影响。相关推导见\ref{sec:基于相关分析的Ho-Kalman辨识有偏-无偏性分析}。根据
+\eqref{eq:闭环有偏性公式}可知，在闭环情况下估计的脉冲响应序列对应的DTFT满足：
+\begin{equation*}
+    \hat{G}(e^{j\omega})=G(e^{j\omega})[1-\cfrac{\sigma_x^2}{S_{xx}(e^{j\omega})}]
+    \tag{\ref{eq:闭环有偏性公式}}
+\end{equation*}
+
+然而，真实的\(G(e^{j\omega})\)未知，偏差因子\(\cfrac{\sigma_x^2}{S_{xx}(e^{j\omega})}\)也无法从辨识数据中直接计算。
+因此需要引入相干函数来从数据中评估基于维纳-霍普夫方程估计脉冲响应序列的估计质量。
+
+相干函数定义为：
+\begin{equation}
+    \gamma_{xy}^2(\omega)=\frac{|S_{xy}(e^{j\omega})|^2}{S_{xx}(e^{j\omega})\,S_{yy}(e^{j\omega})}
+\end{equation}
+
+其中\(S_{xy}(e^{j\omega})\)为互功率谱密度，\(S_{xx}(e^{j\omega})\)和\(S_{yy}(e^{j\omega})\)为自功率谱密度。
+相干函数满足\(0\le \gamma_{xy}^2(\omega)\le 1\)。并且相干函数在某个频点的值越接近1，说明输出信号中该频点的分量
+可以被输入信号线性解释
+\footnote{即可以用一个动态的线性时不变系统（LTI）系统来拟合从输入信号到输出信号的关系。}
+的比例越高，使用维纳-霍普夫方程估计脉冲响应序列在这个频点的可信度也会越高。
+
+相干函数除了用于评估有偏程度外，也能用于信噪比的分析。为对比不同辨识策略在反电动势
+造成的闭环结构下的表现，考虑以下四种情况，并分别计算相干函数：
+\begin{itemize}
+    \item 开环辨识基准（D轴同步电感\(L_d\)辨识）：D轴电路方程为
+\(u_d=R_si_d+L_d\frac{di_d}{dt}\)，在\(i_q=0\)条件下无电磁转矩、
+无转动、无反电动势，交叉耦合项\(\omega_eL_qi_q=0\)，D轴RL电路为纯开环结构，
+辨识结果理论上无偏，可作为相干函数的理想参考基准。
+    \item 重构等效输入法（Q轴同步电感\(L_q\)辨识）：通过计算等效输入电压
+\(U_q'=U_q-\omega_e(L_di_d+\psi_m)\)辨识从\(U_q'\)到\(i_q\)的传递函数。
+    \item 直接法：以测量的\(i_q\)为输入、转速\(n\)为输出，直接辨识从\(i_q\)到\(n\)的
+传递函数。
+    \item 间接法闭环辨识：先辨识从\(U_q\)到\(n\)的闭环传递函数，再根据已确定的Q轴
+电流传递函数反推机械部分的传递函数\(G_m(s)\)。
+\end{itemize}
+
+将相干函数满足\(\gamma^2_{\text{dB}} > -0.5\text{dB}\)（即\(\gamma^2 \ge 0.89\)）视为估计
+可靠区间。对于电路模态（DQ轴的同步电感辨识），在\(100\text{Hz}\sim 3000\text{Hz}\)
+范围内进行分析，该频段以RL电路转折频率为中心，覆盖了电流动态的主要信息区间。DQ轴同步电感辨识的相干函数如下所示。
+
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/D轴同步电感辨识相干函数.png}
+        \caption{D轴同步电感辨识的相干函数}
+        \label{fig:D轴同步电感辨识的相干函数}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/Q轴同步电感辨识相干函数.png}
+        \caption{Q轴同步电感辨识的相干函数}
+        \label{fig:Q轴同步电感辨识的相干函数}
+    \end{minipage}
+\end{figure}
+
+可以发现，D轴辨识时无电磁转矩、系统开环，相干函数在关注频段内均满足
+\(\gamma^2_{\text{dB}} > -0.5\,\text{dB}\)，信噪比高，辨识可信度高。
+Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整体较D轴有所下降，
+且在出现相干函数谷值（如1kHz附近）。但在电路模态的核心频段（\(400\text{Hz}\sim
+800\text{Hz}\)，即RL转折频率附近），Q轴相干函数仍能维持在\(-0.5\,\text{dB}\)
+以上，说明即使理论有偏，工程上该偏差可以近似忽略。
+
+接下来分析直接法与间接法在反电动势闭环结构下的表现，工作点取
+\(U_q = \pm 2\,\text{V}, \pm 4\,\text{V}\)
+\footnote{相较于电路模态辨识少了0V工作点。0V附近静摩擦、转矩死区等
+非线性因素主导，辨识结果与其他工作点截然不同，因此不纳入考虑。}
+仍将\(\gamma^2_{\text{dB}} > -0.5\,\text{dB}\)视为工程可靠区间。机械动态远慢于电气动态，
+其转折频率通常在数赫兹至数十赫兹量级，选取\(1\,\text{Hz}\sim 300\,\text{Hz}\)覆盖机械动态的主要信息区间。相干函数如下所示。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环相干函数（-4V）.png}
+        \caption{速度环相干函数（-4V）}
+        \label{fig:速度环相干函数（-4V）}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环相干函数（-2V）.png}
+        \caption{速度环相干函数（-2V）}
+        \label{fig:速度环相干函数（-2V）}
+    \end{minipage}
+\end{figure}
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环相干函数（2V）.png}
+        \caption{速度环相干函数（2V）}
+        \label{fig:速度环相干函数（2V）}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环相干函数（4V）.png}
+        \caption{速度环相干函数（4V）}
+        \label{fig:速度环相干函数（4V）}
+    \end{minipage}
+\end{figure}
+
+可以发现，直接法的相干函数在核心频段（\(10\,\text{Hz}\sim 100\,\text{Hz}\)）内
+普遍低于\(-0.5\,\text{dB}\)，估计质量不可靠；间接法的相干函数虽整体优于直接法，
+但仍明显低于电路模态的辨识结果。两者在机械动态中相干函数整体偏低，根本原因
+在于机械部分的非线性因素（静摩擦、转矩死区、机械系统阶次不定等）无论从数量
+还是强度均远超电路部分。而直接法在闭环情况下还存在数学可证明的严格有偏，因此相干函数值更低。
+综上，对机械传递函数的辨识应优先采用间接法：先辨识
+\(U_q\to n\)的闭环传递函数，再从已确定的Q轴电路传递函数中代数反推
+\(G_m(s)\)。
+
+\subsection{速度环被控对象辨识与开环验证}
+
+\subsection{速度环频域矫正控制器设计与闭环验证}

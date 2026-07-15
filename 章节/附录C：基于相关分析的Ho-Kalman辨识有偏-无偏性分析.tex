@@ -1,0 +1,313 @@
+\newpage
+\section{基于相关分析的Ho-Kalman辨识有偏-无偏性分析}
+\label{sec:基于相关分析的Ho-Kalman辨识有偏-无偏性分析}
+\subsection{噪声作用下的相关分析法简介\label{sec:噪声作用下的相关分析法简介}}
+在\ref{sec:Ho-Kalman辨识过程介绍}中介绍了电机参数辨识所用到的Ho-Kalman辨识算法，其大致包含以下几个步骤：
+\begin{itemize}
+    \item 求取输入的自相关序列与输入输出的互相关序列，利用维纳-霍普夫方程求取系统的脉冲响应序列
+    \item 利用系统的脉冲响应序列（离散系统的马尔科夫系数）构造系统的汉克尔矩阵
+    \item 对汉克尔矩阵进行奇异值分解确定系统阶次
+    \item 利用汉克尔矩阵和系统的阶次，估计系统的状态空间实现
+    \item 根据估计得到状态空间实现，求取系统的传递函数
+\end{itemize}
+
+Ho-Kalman算法由B.L.Ho（何炳麟）和R.E.Kalman（鲁道夫·E·卡尔曼）在《Regelungstechnik》\footnote{德语，意为《控制技术》}上
+发表的《Effective construction of linear state-variable models from input/output functions》
+（1966）中提出
+\footnote{1965年以《Effective construction of linear state-variable models from input/output data》为题，
+在第3届Allerton电路与系统理论会议以会议论文形式预印，正文中提到是正式发表的版本}，
+当时他们分析的是如何从确定已知的脉冲响应序列中估计系统的阶次，并构造最小子空间实现和求取传递函数，而如何获取系统的脉冲响应序列
+严格意义上并不属于Ho-Kalman算法的内容。工程上使用维纳-霍普夫方程求解脉冲响应序列则是相关分析法的内容，是早期与Ho-Kalman算法搭配实现
+系统辨识的工具。
+
+Ho-Kalman辨识算法提出了如何从已知的脉冲响应序列中构造系统的状态空间实现，奠定了现代子空间辨识算法的核心思想。但从系统辨识性质来看，
+上述基于维纳-霍普夫方程相关分析求解脉冲响应序列的
+Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的系统不处于闭环中。若将其运用于闭环环节的辨识，辨识结果将是有偏的，
+而有偏来源并不在Ho-Kalman算法本身，而主要来自维纳-霍普夫方程的相关分析过程。
+
+根据线性时不变系统的卷积性质，输入序列\(x_k\)、输出序列\(y_k\)与系统脉冲响应序列\(g_k\)满足：
+\begin{equation*}
+    y_k = g_k * x_k
+\end{equation*}
+
+假设\(x_k\)为无噪声的理想输入，输出端存在采样噪声\(n_{y,k}\)，则实测输出为：
+\begin{equation*}
+    y_k = g_k * x_k + n_{y,k}
+\end{equation*}
+
+用矩阵表示为：
+\begin{equation*}
+    \textbf{Y}=\textbf{X}\textbf{g}+\textbf{n}_y
+\end{equation*}
+
+若直接在时域上进行最小二乘估计\footnote{这正是矩阵方程求解脉冲响应序列的本质，在时域进行最小二乘拟合。}，
+脉冲响应序列的估计值为：
+\begin{equation*}
+    \hat{\textbf{g}} = (\textbf{X}^T\textbf{X})^{-1}\textbf{X}^T\textbf{Y}
+    = (\textbf{X}^T\textbf{X})^{-1}\textbf{X}^T(\textbf{X}\textbf{g}+\textbf{n}_y)
+    = \textbf{g} + (\textbf{X}^T\textbf{X})^{-1}\textbf{X}^T\textbf{n}_y
+\end{equation*}
+
+为使估计一致（当数据长度\(N\to\infty\)时\(\hat{\textbf{g}}\to\textbf{g}\)），误差项需渐近为零：
+\begin{equation*}
+    \lim\limits_{N\to\infty}\frac{1}{N}\textbf{X}^T\textbf{n}_y = \mathbf{0}
+\end{equation*}
+
+上述式中\(\textbf{X}\)是由输入信号构成的托普利茨矩阵，那么\(\cfrac{1}{N}\textbf{X}^T\textbf{n}_y\)的每个元素
+是输入与噪声的互相关运算结果。因此，使用相关运算将时域离散卷积转换为相关序列的卷积为：
+\begin{equation*}
+    R_{xy}[k]=g_k * R_{xx}[k]+R_{xn_y}[k]
+\end{equation*}
+
+矩阵表示为：
+\begin{equation*}
+    \textbf{r}_{xy}=\textbf{r}_{xx}\textbf{g}+\textbf{r}_{xn_y}
+\end{equation*}
+
+相关域下的脉冲响应估计为：
+\begin{equation*}
+    \hat{\textbf{g}}  = \textbf{r}_{xx}^{-1}\textbf{r}_{xy}
+    = \textbf{g} + \textbf{r}_{xx}^{-1}\textbf{r}_{xn_y}
+    \footnote{要求\(\textbf{r}_{xx}\)（由输入自相关序列排成的托普利茨矩阵）可逆。}
+\end{equation*}
+
+可以发现，无论是在时域上离散卷积还是在相关域上离散卷积，估计脉冲响应序列渐进一致都要求
+\textbf{输入信号与输出测量噪声不相关}，这也是使用维纳-霍普夫方程估计脉冲响应序列并进行Ho-Kalman辨识可行的核心前提。
+在开环条件下，输入与噪声来自独立源，该条件自然满足。
+在闭环条件下，噪声经反馈回路进入输入通道，该条件一般不再成立。
+
+值得一提的是，引入基于维纳-霍普夫方程的相关分析而非直接在时域求解卷积方程，主要是为了显式地提出无偏估计脉冲响应序列的
+条件，即让输入信号和测量输出信号的噪声不相关\(R_{xn_y}[k]=0\)，这也是后续分析在闭环情况下估计脉冲响应序列有偏的出发点。
+
+由于后续分析中所有信号均为离散采样序列，频域分析将采用\textbf{离散时间傅里叶变换（DTFT）}代替连续域的拉普拉斯变换。
+对于自相关序列\(R_{xx}[k]\)，其DTFT即为\textbf{功率谱密度}：
+\begin{equation*}
+    S_{xx}(e^{j\omega})=\sum_{k=-\infty}^{\infty}R_{xx}[k]\,e^{-j\omega k}
+\end{equation*}
+互相关序列\(R_{xy}[k]\)的DTFT\(S_{xy}(e^{j\omega})\)同理定义。
+由DTFT的卷积定理，离散卷积对应于频域乘积：若\(y_k = g_k * x_k\)，则\(Y(e^{j\omega})=G(e^{j\omega})X(e^{j\omega})\)，
+其中\(G(e^{j\omega})\)为脉冲响应序列\(g_k\)的DTFT，即系统的\textbf{离散频率响应}。
+\footnote{附录B中Ho-Kalman辨识得到的脉冲传递函数记为\(G(z)\)，
+其在单位圆上的取值\(G(e^{j\omega})=\left.G(z)\right|_{z=e^{j\omega}}\)即为离散频率响应，以下统一以\(G(e^{j\omega})\)表示。}
+
+\subsection{闭环的有偏-无偏性分析}
+假设需要对下述系统利用维纳-霍普夫方程进行相关分析以求取脉冲响应序列：
+\begin{center}
+\begin{tikzpicture}[auto, node distance=3cm, >=latex']
+    % 样式定义
+    \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=5em, align=center]
+    \tikzstyle{sum} = [draw, circle, node distance=1.5cm, minimum size=1.2em, inner sep=0pt]
+    \tikzstyle{input} = [coordinate]
+    \tikzstyle{output} = [coordinate]
+
+    % 放置节点
+    \node [input, name=input] {};
+    \node [sum, right of=input] (sum) {};
+    \node [block, right of=sum] (G1) {\(G_1(e^{j\omega})\)};
+    \node [output, right of=G1] (output) {};
+    \node [block, below of=G1, node distance=2cm] (G2) {\(G_2(e^{j\omega})\)};
+
+    \draw [->] (input) -- node {\(u_k\)} (sum);
+    \draw [->] (sum) -- node {\(x_k\)} (G1);
+    \draw [->] (G1) -- node [name=y] {\(y_k\)} (output);
+    \draw [->] (y) |- (G2);
+    \draw [->] (G2) -| node[pos=0.2] {\(e_k\)} node[pos=0.8] {$-$} (sum);
+\end{tikzpicture}
+\end{center}
+
+该系统的反馈回路来源于物理结构（如电机的反电动势），而不是人为造成的，也无法被人为解开。
+因此在模型内部流转的信号均为无噪声的理想信号：
+\begin{equation*}
+    \begin{cases}
+    x_{0,k}=u_k-e_{0,k}\\
+    y_{0,k}=x_{0,k}*g_{1,k}\\
+    e_{0,k}=y_{0,k}*g_{2,k}
+    \end{cases}
+\end{equation*}
+
+而所有的噪声都在测量环节被引入，即实测用于分析的信号满足：
+\begin{equation*}
+    \begin{cases}
+        x_k=x_{0,k}+n_{x,k}\\
+        y_k=y_{0,k}+n_{y,k}\\
+        e_k=e_{0,k}+n_{e,k}\\
+    \end{cases}
+\end{equation*}
+
+认为上述噪声\(n_{x,k}\)、\(n_{y,k}\)、\(n_{e,k}\)是独立同分布的白噪声，且与理想信号无关。
+假设可操作的变量为\(u_k\)，那么认为\(u_k\)是确定无噪声的信号。在上述前提下，进行基于维纳-霍普夫方程的脉冲响应求解，分析结论的
+偏差性。
+
+\subsubsection{中间到中间/输出}
+选取\(x_k\)作为输入，而\(y_k\)作为输出，辨识前向通道频率响应\(G_1(e^{j\omega})\)。时域方程满足：
+\begin{align*}
+    y_k&=y_{0,k}+n_{y,k}\\
+    &=g_{1,k}*x_{0,k}+n_{y,k}\\
+    &=g_{1,k}*[x_k-n_{x,k}]+n_{y,k}\\
+    &=g_{1,k}*x_k-g_{1,k}*n_{x,k}+n_{y,k}
+\end{align*}
+
+两侧同时对输入信号\(x_k\)进行相关运算得到：
+\begin{align*}
+    R_{xy}[k] = g_{1,k}*R_{xx}[k]+R_{x\omega}[k]
+\end{align*}
+
+其中\(\omega_k = -g_{1,k}*n_{x,k}+n_{y,k}\)表示等价输出噪声。根据\ref{sec:噪声作用下的相关分析法简介}中的分析可知，能够
+无偏估计脉冲响应的充要条件是输入信号与输出噪声无相关，即\(R_{x\omega}[k]=0\)。将表达式代入相关运算的定义可得：
+\begin{align*}
+    R_{x\omega}[k] &= \text{E}[x_k\,\omega_{k+m}]\\
+    &= \text{E}[x_k\times(-g_{1,k}*n_{x,k+m}+n_{y,k+m})]\\
+    &= \text{E}[(x_{0,k}+n_{x,k})\times(-g_{1,k}*n_{x,k+m}+n_{y,k+m})]\\
+    &= \text{E}[x_{0,k}\times(-g_{1,k}*n_{x,k+m})]+\text{E}[x_{0,k}\times n_{y,k+m}]
+    + \text{E}[n_{x,k}\times(-g_{1,k}*n_{x,k+m})]+\text{E}[n_{x,k}\times n_{y,k+m}]
+\end{align*}
+
+不难发现，上述四个式子中，\(\text{E}[x_{0,k}\times(-g_{1,k}*n_{x,k+m})]=\text{E}[x_{0,k}\times n_{y,k+m}]=
+\text{E}[n_{x,k}\times n_{y,k+m}]=0\)，因为\(x_{0,k}\)、\(n_{x,k}\)、\(n_{y,k}\)互不相关。但是\(\text{E}[n_{x,k}\times(-g_{1,k}*n_{x,k+m})]
+\neq 0\)，因为\(n_{x,k}\)与自身是自相关的。使用维纳-霍普夫方程估计从\(x_k\)到\(y_k\)的脉冲响应是有偏的。
+
+接下来具体量化这种偏差。根据上述分析可知\(R_{x\omega}[k]=\text{E}[n_{x,k}\times(-g_{1,k}*n_{x,k+m})]\)。根据
+相关计算与卷积的关系可得：
+\begin{align*}
+    R_{x\omega}[k]&=-(n_{x,-k}*(g_{1,k}*n_{x,k}))[k]\\
+    &=-g_{1,k} * (n_{x,-k}*n_{x,k})[k]\\
+    &=-g_{1,k}*R_{n_xn_x}[k]
+\end{align*}
+
+上式中\(n_{x,-k}\)表示时序反转（与附录B中\(x_{-k}\)的约定一致）。对上式求取DTFT可得：
+\begin{equation*}
+    S_{x\omega}(e^{j\omega})=-G_1(e^{j\omega})S_{n_xn_x}(e^{j\omega})
+\end{equation*}
+
+对于理想噪声\(n_{x,k}\)而言，假设其服从正态分布\(n_{x,k}\sim N(0,\sigma_x^2)\)，则
+\(R_{n_xn_x}[k]=\sigma_x^2\delta[k]\)（其中\(\delta[k]\)为克罗内克\(\delta\)函数，\(k=0\)时为1，否则为0），
+即只在\(k=0\)处有非零值，呈现出尖锐的自相关特征。
+因此其DTFT为常数\(S_{n_xn_x}(e^{j\omega})=\sigma_x^2\)。
+故上式可以进一步化为：
+\begin{equation*}
+    S_{x\omega}(e^{j\omega})=-G_1(e^{j\omega})\sigma_x^2
+\end{equation*}
+
+若对估计的脉冲响应序列直接求取DTFT以估计频率响应，则对维纳-霍普夫方程直接求取DTFT为：
+\begin{align*}
+    S_{xy}(e^{j\omega})&=G_1(e^{j\omega})S_{xx}(e^{j\omega})+S_{x\omega}(e^{j\omega})\\
+    &=G_1(e^{j\omega})S_{xx}(e^{j\omega})-G_1(e^{j\omega})\sigma_x^2
+\end{align*}
+
+估计的频率响应表达式为\(\hat{G_1}(e^{j\omega})=\cfrac{S_{xy}(e^{j\omega})}{S_{xx}(e^{j\omega})}\)，因此有：
+\begin{equation}
+    \hat{G_1}(e^{j\omega})=G_1(e^{j\omega})-\cfrac{G_1(e^{j\omega})\sigma_x^2}{S_{xx}(e^{j\omega})}
+    =G_1(e^{j\omega})[1-\cfrac{\sigma_x^2}{S_{xx}(e^{j\omega})}]
+    \label{eq:闭环有偏性公式}
+\end{equation}
+
+\subsubsection{偏差直接重构中间到中间/输出}
+选取\(x_k\)作为输入，而\(y_k\)作为输出，辨识前向通道频率响应\(G_1(e^{j\omega})\)。
+但此时\(x_k\)不是单独测量的物理量，而是使用测量反馈信号和给定信号，使用\(x_{rec,k}=u_k-e_k\)重构。
+此时时域方程满足：
+\begin{align*}
+    y_k&=y_{0,k}+n_{y,k}\\
+    &=g_{1,k}*x_{0,k}+n_{y,k}\\
+    &=g_{1,k}*[u_k-e_{0,k}]+n_{y,k}\\
+    &=g_{1,k}*[u_k-(e_k-n_{e,k})]+n_{y,k}\\
+    &=g_{1,k}*[u_k-e_k]+g_{1,k}*n_{e,k}+n_{y,k}
+\end{align*}
+
+可以发现其结构与上一小节完全一致，分析过程也一致，只需要将原先测量的\(x_k\)换为重构得到的
+\(x_{rec,k}=u_k-e_k\)即可。直接给出最终的有偏估计公式：
+\begin{equation*}
+    \hat{G_1}(e^{j\omega})=G_1(e^{j\omega})[1-\cfrac{\sigma_e^2}{S_{x_{rec}x_{rec}}(e^{j\omega})}]
+\end{equation*}
+
+\subsubsection{输入直接到输出}
+选取\(u_k\)作为输入，而\(y_k\)作为输出，辨识闭环频率响应\(\cfrac{G_1(e^{j\omega})}{1+G_1(e^{j\omega})G_2(e^{j\omega})}\)。
+此时时域方程满足：
+\begin{equation*}
+    y_k = g_k*u_k + n_{y,k}
+\end{equation*}
+
+由于\(u_k\)是给定的无噪信号，因此\(R_{un_y}[k]=0\)，满足输入信号与输出噪声不相关，能够无偏估计。
+而这也是将闭环视为等效的开环，再使用开环辨识方法进行无偏估计，最后根据已经得到的内部传递函数反推
+未辨识部分的闭环间接法辨识。
+
+\subsection{开环带噪的有偏-无偏性分析}
+上述分析了闭环辨识算法在存在噪声情况的有偏性。不难推广发现，此前对开环辨识分析都是在无噪声的情况下进行的分析。实际情况中
+开环辨识过程中本身也存在噪声，这对于估计的一致性的影响需要进行分析。
+
+假设要辨识一个开环的对象\(G(e^{j\omega})\)，输入信号为\(u_k\)，输出为\(y_k\)。但在这一过程中，从理想输入到系统实际接收的输入之间
+存在输入侧噪声\(n_{u,k}\)。而在输出侧存在测量噪声\(n_{y,k}\)，使得系统实际输入\(u'_k=u_k+n_{u,k}\)，
+而输出\(y_k=y_{0,k}+n_{y,k}\)，如下图所示。
+\begin{center}
+\begin{tikzpicture}[auto, node distance=3cm, >=latex']
+    % 样式定义
+    \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=5em, align=center]
+    \tikzstyle{sum} = [draw, circle, node distance=1.5cm, minimum size=1.2em, inner sep=0pt]
+    \tikzstyle{input} = [coordinate]
+    \tikzstyle{output} = [coordinate]
+
+    % 放置节点
+    \node [input, name=input] {};
+    \node [sum, right of=input] (sum1) {};
+    \node [input,above of=sum1,node distance=1.5cm] (err_i) {};
+    \node [block, right of=sum1] (G) {\(G(e^{j\omega})\)};
+    \node [sum, right of=G,node distance=3cm] (sum2) {};
+    \node [input,above of=sum2,node distance=1.5cm] (err_o) {};
+    \node [output, right of=sum2] (output) {};
+
+    \draw [->] (input) -- node {\(u_k\)} (sum1);
+    \draw [->] (sum1) -- node {\(u'_k\)} (G);
+    \draw [->] (G) -- node {\(y_{0,k}\)} (sum2);
+    \draw [->] (sum2) -- node {\(y_k\)} (output);
+    \draw [->] (err_i) -- node {\(n_{u,k}\)} (sum1);
+    \draw [->] (err_o) -- node {\(n_{y,k}\)} (sum2);
+\end{tikzpicture}
+\end{center}
+
+分析时域表达式为：
+\begin{align*}
+    y_k&=y_{0,k}+n_{y,k}\\
+    &=g_k*u'_k+n_{y,k}\\
+    &=g_k*[u_k+n_{u,k}]+n_{y,k}\\
+    &=g_k*u_k+g_k*n_{u,k}+n_{y,k}
+\end{align*}
+
+等效的输出噪声为\(\omega_k = g_k*n_{u,k}+n_{y,k}\)。若输入侧噪声与输入信号本身不相关，那么输入信号就与输出噪声
+不相关，所以依然可以得到无偏估计的脉冲响应序列。
+
+但在实际工程中，输入侧噪声有时并不是完全的白噪声，而是和输入信号相关的噪声（如电阻压降对电压输入的敏感性）。极端情况下
+输出侧测量噪声可能也是与输入信号相关。接下来对这种极端情况进行分析。
+
+对时域表达式左右两边同时对\(u_k\)进行相关运算得到：
+\begin{equation*}
+    R_{uy}[k]=g_k*R_{uu}[k]+R_{u\omega}[k]
+\end{equation*}
+
+对\(R_{u\omega}[k]\)展开得到：
+\begin{align*}
+    R_{u\omega}[k] &= \text{E}[u_k\,\omega_{k+m}]\\
+    &= \text{E}[u_k\times(g_k*n_{u,k+m}+n_{y,k+m})]\\
+    &= \text{E}[u_k\times(g_k*n_{u,k+m})]+\text{E}[u_k\times n_{y,k+m}]\\
+    &= (u_{-k}*g_k*n_{u,k})[k]+(u_{-k}*n_{y,k})[k]\\
+    &= g_k*R_{un_u}[k]+R_{un_y}[k]
+\end{align*}
+
+上式中\(u_{-k}\)表示\(u_k\)的时序反转（与附录B中\(x_{-k}\)的约定一致），求取DTFT可得：
+\begin{equation*}
+    S_{u\omega}(e^{j\omega})=G(e^{j\omega})S_{un_u}(e^{j\omega})+S_{un_y}(e^{j\omega})
+\end{equation*}
+
+代入原式可得：
+\begin{align*}
+    S_{uy}(e^{j\omega})&=G(e^{j\omega})S_{uu}(e^{j\omega})+S_{u\omega}(e^{j\omega})\\
+    &= G(e^{j\omega})S_{uu}(e^{j\omega})+G(e^{j\omega})S_{un_u}(e^{j\omega})+S_{un_y}(e^{j\omega})\\
+    \hat{G}(e^{j\omega})=\cfrac{S_{yu}(e^{j\omega})}{S_{uu}(e^{j\omega})}&=G(e^{j\omega})+G(e^{j\omega})\cfrac{S_{un_u}(e^{j\omega})}{S_{uu}(e^{j\omega})}+\cfrac{S_{un_y}(e^{j\omega})}{S_{uu}(e^{j\omega})}
+\end{align*}
+
+整理可得：
+\begin{equation}
+    \hat{G}(e^{j\omega})=G(e^{j\omega})[1+\cfrac{S_{un_u}(e^{j\omega})}{S_{uu}(e^{j\omega})}]+\cfrac{S_{un_y}(e^{j\omega})}{S_{uu}(e^{j\omega})}
+    \label{eq:开环带噪的有偏性公式}
+\end{equation}
+
+定义信噪比为\(\cfrac{S_{uu}(e^{j\omega})}{S_{un_u}(e^{j\omega})}\)和\(\cfrac{S_{uu}(e^{j\omega})}{S_{un_y}(e^{j\omega})}\)。根据\ref{eq:开环带噪的有偏性公式}可知，
+信噪比越高，有偏估计的偏差越小，这也是工程上要求激励信号幅值较大的原因。
