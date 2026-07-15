@@ -1,8 +1,17 @@
-# LaTeX auxiliary files
-out/*.aux
-out/*.log
-out/*.toc
-out/*.fls
-out/*.fdb_latexmk
-out/*.xdv
-out/*.synctex(busy)
+# LaTeX build artifacts
+*.aux
+*.log
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.xdv
+*.synctex.gz
+*.synctex(busy)
+
+# Root-level output PDF (canonical output is in out/)
+/*.pdf
+
+# Keep tracked files in out/
+!out/*.pdf
+!out/*.synctex.gz
