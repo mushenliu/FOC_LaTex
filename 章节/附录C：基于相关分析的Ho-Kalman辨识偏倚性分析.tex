@@ -1,6 +1,6 @@
 \newpage
-\section{基于相关分析的Ho-Kalman辨识有偏-无偏性分析}
-\label{sec:基于相关分析的Ho-Kalman辨识有偏-无偏性分析}
+\section{基于相关分析的Ho-Kalman辨识偏倚性分析}
+\label{sec:基于相关分析的Ho-Kalman辨识偏倚性分析}
 \subsection{噪声作用下的相关分析法简介\label{sec:噪声作用下的相关分析法简介}}
 在\ref{sec:Ho-Kalman辨识过程介绍}中介绍了电机参数辨识所用到的Ho-Kalman辨识算法，其大致包含以下几个步骤：
 \begin{itemize}
@@ -90,7 +90,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 \footnote{附录B中Ho-Kalman辨识得到的脉冲传递函数记为\(G(z)\)，
 其在单位圆上的取值\(G(e^{j\omega})=\left.G(z)\right|_{z=e^{j\omega}}\)即为离散频率响应，以下统一以\(G(e^{j\omega})\)表示。}
 
-\subsection{闭环的有偏-无偏性分析}
+\subsection{闭环的偏倚性分析}
 假设需要对下述系统利用维纳-霍普夫方程进行相关分析以求取脉冲响应序列：
 \begin{center}
 \begin{tikzpicture}[auto, node distance=3cm, >=latex']
@@ -230,7 +230,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 而这也是将闭环视为等效的开环，再使用开环辨识方法进行无偏估计，最后根据已经得到的内部传递函数反推
 未辨识部分的闭环间接法辨识。
 
-\subsection{开环带噪的有偏-无偏性分析}
+\subsection{开环带噪的偏倚性分析}
 上述分析了闭环辨识算法在存在噪声情况的有偏性。不难推广发现，此前对开环辨识分析都是在无噪声的情况下进行的分析。实际情况中
 开环辨识过程中本身也存在噪声，这对于估计的一致性的影响需要进行分析。
 

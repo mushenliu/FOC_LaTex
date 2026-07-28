@@ -1,6 +1,7 @@
 \newpage
 \section{速度-电流环的频域矫正控制器设计}
-\subsection{电流环的频域矫正控制器设计}
+\subsection{电流环的频域矫正控制器设计
+\label{sec:电流环频域矫正控制器设计}}
 \subsubsection{D轴频域矫正控制器设计与闭环验证}
 D轴电流环的传递函数为：
 \begin{align*}
@@ -37,9 +38,12 @@ us下的离散化形式为：
     C_D(s)=\cfrac{12.95s+2.18\times 10^4}{4.265\times 10^{-5}s^2+s}
 \end{equation*}
 
-使用双线性变换离散化后得到：
+使用双线性变换离散化后得到\footnote{对于采用双线性变换离散化的控制器，积分环节对应为z=1的极点。因此要求离散后分母各个系数之和
+要严格为零，否则z=1处的极点就会发生偏移，积分环节变为惯性环节。在正常工况下影响不大，但是在极端情况（如长时间堵转、积分严重
+饱和）会导致系统行为失常。MATLAB默认显示四位有效数字，可能会导致精度损失，此时需要手动点开传递函数数据结构查看
+更精确的值}：
 \begin{equation*}
-    C_D(z)=\cfrac{5.998+0.6373z^{-1}-5.361z^{-2}}{1-1.123z^{-1}+0.1227z^{-2}}
+    C_D(z)=\cfrac{5.998+0.6373z^{-1}-5.361z^{-2}}{1-1.1227z^{-1}+0.1227z^{-2}}
 \end{equation*}
 
 经过超前控制后的开环频率特性和闭环频率特性如下图所示。
@@ -111,7 +115,7 @@ Q轴超前控制器：
 
 使用双线性变换离散化后得到：
 \begin{equation*}
-    C_Q(z)=\cfrac{6.808+0.7233z^{-1}-6.085z^{-2}}{1-1.123z^{-1}+0.1227z^{-2}}
+    C_Q(z)=\cfrac{6.808+0.7233z^{-1}-6.085z^{-2}}{1-1.1227z^{-1}+0.1227z^{-2}}
 \end{equation*}
 
 经过超前控制后的开环频率特性和闭环频率特性如下图所示。
@@ -190,10 +194,11 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
     \centering
     \begin{tikzpicture}[auto, node distance=3cm, >=latex']
         % 样式定义
-        \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=5em, align=center]
-        \tikzstyle{sum} = [draw, circle, node distance=1.5cm, minimum size=1.2em, inner sep=0pt]
+        \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=3em, align=center]
+        \tikzstyle{sum} = [draw, circle, node distance=1.5cm, minimum size=0.5em, inner sep=0pt]
         \tikzstyle{input} = [coordinate]
         \tikzstyle{output} = [coordinate]
+        \tikzstyle{feedback} = [coordinate]
 
         % 放置节点
         \node [input, name=input] {};
@@ -204,13 +209,13 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
         \node [output, right of=Mech] (output) {};
         \node [block, below of=K, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
 
-        \draw [->] (input) -- node {\(U_q(s)\)} (sum);
-        \draw [->] (sum) -- node {\(U_q'(s)\)} (RL);
-        \draw [->] (RL) -- node {\(i_q(s)\)} (K);
-        \draw [->] (K) -- node {\(T_e(s)\)} (Mech);
-        \draw [->] (Mech) -- node [name=y] {\(n(s)\)} (output);
+        \draw [->] (input) -- node {\(U_q\)} (sum);
+        \draw [->] (sum) -- node {\(U_q'\)} (RL);
+        \draw [->] (RL) -- node {\(i_q\)} (K);
+        \draw [->] (K) -- node {\(T_e\)} (Mech);
+        \draw [->] (Mech) -- node [name=y] {\(n\)} (output);
         \draw [->] (y) |- (Kf);
-        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.5] {\(E(s)\)} (sum);
+        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.5] {\(E\)} (sum);
     \end{tikzpicture}
     \caption{\(i_d=0\)假设下的Q轴电流-速度系统框图}
     \label{fig:Q轴电流-速度系统框图}
@@ -242,7 +247,7 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
 造成的闭环结构下的表现，考虑以下四种情况，并分别计算相干函数：
 \begin{itemize}
     \item 开环辨识基准（D轴同步电感\(L_d\)辨识）：D轴电路方程为
-\(u_d=R_si_d+L_d\frac{di_d}{dt}\)，在\(i_q=0\)条件下无电磁转矩、
+\(u_d=R_si_d+L_d\cfrac{di_d}{dt}\)，在\(i_q=0\)条件下无电磁转矩、
 无转动、无反电动势，交叉耦合项\(\omega_eL_qi_q=0\)，D轴RL电路为纯开环结构，
 辨识结果理论上无偏，可作为相干函数的理想参考基准。
     \item 重构等效输入法（Q轴同步电感\(L_q\)辨识）：通过计算等效输入电压
@@ -324,12 +329,19 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 普遍较低，估计质量不可靠；间接法的相干函数虽整体优于直接法，
 但仍明显低于电路模态的辨识结果。两者在机械动态中相干函数整体偏低，根本原因
 在于机械部分的非线性因素（静摩擦、转矩死区、机械系统阶次不定等）无论从数量
-还是强度均远超电路部分。而直接法在闭环情况下还存在数学可证明的严格有偏，因此相干函数值更低。
+还是强度均远超电路部分。
+\footnote{另一种理解两者差异的角度是奇异摄动。电机的电路部分和机械部分时间常数尺度差异大，
+（电路时间常数\(\cfrac{L_q}{R_s}\approx 0.3\text{ms}\)，而根据后续机械部分传递函数的主导极点
+可知主导时间常数约\(\cfrac{1}{30}\text{s}=33.33\text{ms}\)，分离比\(\cfrac{0.3}{33.33}\approx 0.009\ll 1\)）
+构成天然奇异摄动系统。辨识快模态（电路部分）时，慢模态（转速）在电气激励时间尺度上近似不变，
+反电动势近似为常数，反馈回路基本没有激活。辨识慢模态（机械部分）时，
+转速随激励同步变化，反电动势反馈回路在机械时间尺度上被完全激活，辨识结果可靠性显著降低。}
+而直接法在闭环情况下还存在数学可证明的严格有偏，因此相干函数值更低。
 综上，对机械传递函数的辨识应优先采用间接法：先辨识
 \(U_q\to n\)的闭环传递函数，再从已确定的Q轴电路传递函数中代数反推
 \(G_m(s)\)。
 
-\subsection{速度环被控对象辨识}
+\subsection{速度环被控对象辨识与开环验证}
 \subsubsection{\(i_d=0\)理想化假设分析}
 前文建立了基于\(i_d^*=0\)假设的间接法辨识框架：将\(U_q\)到\(n\)的通道建模为
 反电动势闭环结构，其核心在于认为\(i_d\approx 0\)在辨识过程中始终成立，从而使反电动势
@@ -343,9 +355,9 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 以\(U_q=2\text{V}\)为代表性工作点，在M序列激励的全时段内，利用实测的\(i_d(t)\)，
 \(i_q(t)\)和\(n(t)\)数据，分别计算反电动势与电磁转矩在两种情形下的取值并进行对比：
 \begin{itemize}
-    \item $i_d=0$理想假设：计算\(E_0=\omega_e\psi_m=\cfrac{\pi}{30}np\psi_m\)和
+    \item $i_d=0$理想假设：计算\(E_0=\omega_e\psi_m=\cfrac{\pi}{30}n(t)p\psi_m\)和
     \(T_{e0}=\cfrac{3}{2}p\psi_mi_q(t)\)。
-    \item 实测\(i_d\)代入：计算\(E_{\text{meas}}=\cfrac{\pi}{30}np[\psi_m+L_di_d(t)]\)和
+    \item 实测\(i_d\)代入：计算\(E_{\text{meas}}=\cfrac{\pi}{30}n(t)p[\psi_m+L_di_d(t)]\)和
     \(T_{e,\text{meas}}=\cfrac{3}{2}p[\psi_mi_q(t)+(L_d-L_q)i_d(t)i_q(t)]\)，其中
     \(p=14\)，\(\psi_m\)，\(L_d\)，\(L_q\)取自第四章辨识结果。
 \end{itemize}
@@ -377,31 +389,31 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
         \cline{2-5}
         & 相关系数 & 拟合优度 & 相关系数 & 拟合优度\\
         \hline
-        \(U_q=2\text{V}\) & 99.99610\% & 98.78187\% & 99.99994\% & 99.82416\%\\
+        \(U_q=2\text{V}\) & 99.99991\% & 99.86604\% & 100.00000\% & 99.97521\%\\
         \hline
-        \(U_q=4\text{V}\) & 99.98508\% & 97.51169\% & 99.99972\% & 99.61315\%\\
+        \(U_q=4\text{V}\) & 99.99987\% & 99.83449\% & 100.00000\% & 99.96860\%\\
         \hline
-        \(U_q=-2\text{V}\) & 99.99238\% & 98.60759\% & 99.99983\% & 99.76790\%\\
+        \(U_q=-2\text{V}\) & 99.99992\% & 99.86799\% & 100.00000\% & 99.97689\%\\
         \hline
-        \(U_q=-4\text{V}\) & 99.98737\% & 97.25031\% & 99.99970\% & 99.56270\%\\
+        \(U_q=-4\text{V}\) & 99.99985\% & 99.81871\% & 100.00000\% & 99.96570\%\\
         \hline
     \end{tabular}
     \caption{各工作点下\(i_d=0\)理想假设与实测\(i_d\)的差异评估}
-    \label{tab:各工作点id0假设验证汇总}
+    \label{tab:各工作点id=0假设验证汇总}
 \end{table}
 
-由表\ref{tab:各工作点id0假设验证汇总}可知，四个工作点下的反电动势与电磁转矩的相关系数和
-拟合优度均超过97\%，\(i_d=0\)的简化假设在所有工作点下均完全成立。据此，可以确信后续基于
+由表\ref{tab:各工作点id=0假设验证汇总}可知，四个工作点下的反电动势与电磁转矩的相关系数和
+拟合优度均超过99.5\%，\(i_d=0\)的简化假设在所有工作点下均完全成立。据此，可以确信后续基于
 \(i_d=0\)理想模型进行的间接法辨识及机械传递函数反推具备充分的工程合理性。
 
 \subsubsection{不同工作点的机械部分传递函数辨识}
 满足了\(i_d=0\)的理想化近似条件后，才能真正开始基于间接法的机械传递函数辨识。
 在\(U_q=2V\)工作点附近给予伪随机激励，幅值2V，辨识从\(U_q\)到\(n\)的传递函数，奇异值分解如下图所示和
-数值解-解析解频域对比如下图所示。幅频相关系数98.47246\(\%\)，相频相关系数89.59097\(\%\)，复频率
-拟合优度77.60275\(\%\)。根据奇异值分解图可得闭环传递函数应为2阶。辨识得到离散传递函数为：
+数值解-解析解频域对比如下图所示。幅频相关系数99.08708\(\%\)，相频相关系数99.91204\(\%\)，复频率
+拟合优度88.14769\(\%\)。根据奇异值分解图可得闭环传递函数应为2阶。辨识得到离散传递函数为：
 \footnote{由于伪随机信号对直流增益几乎没有辨识能力，因此选取阶跃段的稳态值，除以激励值作为直流增益，
 修正辨识结果。}
-\(G(z)=\cfrac{4.287+144.3z^{-1}}{57.22-86.49z^{-1}+31.69z^{-2}}\)。
+\(G(z)=\cfrac{195+1111z^{-1}}{60.17-51.9z^{-1}+12.32z^{-2}}\)。
 \begin{figure}[H]
     \begin{minipage}{0.5\textwidth}
         \centering
@@ -418,7 +430,7 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 \end{figure}
 
 使用MATLAB的d2c命令，在零阶保持器ZOH作用下将辨识得到的闭环传递函数映射到连续域中，可得连续闭环传递函数
-\(G(s)=\cfrac{-1805s+3.454\times 10^6}{s^2+590.8s+5.63\times 10^4}\)。根据图\ref{fig:Q轴电流-速度系统框图}
+\(G(s)=\cfrac{-2.34\times 10^{4}s+4.578\times 10^7}{s^2+1586s+7.234\times 10^5}\)。根据图\ref{fig:Q轴电流-速度系统框图}
 可知，闭环传递函数和机械部分的传递函数满足：
 \begin{equation}
     G(s)=\cfrac{\cfrac{1}{R_s+L_qs}\times\cfrac{3}{2}p\psi_m\times G_m(s)}
@@ -426,7 +438,7 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
     \label{eq:Q轴电流-速度闭环传递函数表达式}
 \end{equation}
 
-简单推导可得：
+推导可得：
 \begin{equation}
     G_m(s)=\cfrac{(R+L_qs)G(s)}{\cfrac{3}{2}p\psi_m[1-\cfrac{\pi}{30}p\psi_mG(s)]}
     \label{eq:机械部分传递函数表达式}
@@ -434,22 +446,25 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 
 因此可得在2V工作点附近辨识得到的机械部分传递函数为
 \begin{equation*}
-    G_m(s)=\cfrac{-3.915 s^4 - 5115 s^3 + 1.782\times 10^7 s^2 + 
-    1.148\times 10^{10} s + 1.109\times 10^{12}}
-    {0.2028 s^4 + 244.8 s^3 + 8.675\times 10^{4} s^2 + 7.923\times 10^{6} s + 8.45\times 10^{7}}
+    G_m(s)=\cfrac{-50.76 s^4 - 1.145\times 10^5 s^3 + 1.709\times 10^8 s^2 + 
+    3.901\times 10^{11} s + 1.892\times 10^{14}}
+    {0.2028 s^4 + 710.2 s^3 + 7.781\times 10^{5} s^2 + 3.05\times 10^{8} s + 1.087\times 10^{10}}
 \end{equation*}
 
 机械部分传递函数看似为四阶，实际上为二阶，这是因为传递函数代数运算精度不足没能完全对消。求解上述传递函数的零极点结果为：
-零点：-2629.4、1913.4、-471.3、-119.5；极点：-604.083、-471.3261、-119.4545、-12.2530。其中零点
--471.3和极点-471.3261可以视为对消；零点-119.5和极点-119.4545可以视为对消。因此最终只剩下两个零点[-2629.4,1913.4]和
-两个极点[-604.083,-12.2530]。而直流增益为[13122]。
+零点：[-2629.4、1959.4、-792.8±307.9j]；极点：[-1877.6、-792.8±307.9j、-39.5]。其中零点-792.8±307.9j和
+极点-792.8±307.9j可以对消
+\footnote{MATLAB显示精度问题，使得两个零极点看起来完全一致，实际上略有不同才导致没能完全抵消。但零极点的差异在该
+数量级上可以忽略，视为对消}
+。因此最终只剩下两个零点[-2629.4、1959.4]和
+两个极点[-1877.6,-39.5]。而直流增益为[17398]。
 
 后续其他工作点也按照上述方法进行，先辨识2阶的闭环传递函数，使用d2c命令在zoh选项下连续化得到连续域的闭环传递函数，
 通过\eqref{eq:机械部分传递函数表达式}代数计算得到机械部分传递函数，将可以对消的零极点对消后按照两个零点、
 两个极点和直流增益表征辨识结果。
 
-工作点4V的闭环传递函数辨识结果如下图所示，幅频相关系数98.44255\%，相频相关系数88.89574\%，复频率
-拟合优度75.70499\%。辨识得到离散传递函数为：\(G(z)=\cfrac{-1.711+155.8z^{-1}}{56.34-84.82z^{-1}+30.93z^{-2}}\)。
+工作点4V的闭环传递函数辨识结果如下图所示，幅频相关系数98.41397\%，相频相关系数99.79761\%，复频率
+拟合优度83.84955\%。辨识得到离散传递函数为：\(G(z)=\cfrac{198.9+1150z^{-1}}{61.02-52.8z^{-1}+12.06z^{-2}}\)。
 \begin{figure}[H]
     \begin{minipage}{0.5\textwidth}
         \centering
@@ -464,11 +479,11 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
         \caption{速度环工作点4V数值解和解析解对比}
     \end{minipage}
 \end{figure}
-连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1774.3]和极点[-618.6917,-10.1748]，直流增益[16321]
-（零点-478.4和极点-478.4492、零点-121.3和极点-121.2658对消）。
+连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1943.5]和极点[-1945.1,-21]，直流增益[32510]
+（零极点-810.7±231.1j对消）。
 
-工作点-2V的闭环传递函数辨识结果如下图所示，幅频相关系数98.77557\%，相频相关系数87.54160\%，复频率
-拟合优度79.46672\%。辨识得到离散传递函数为：\(G(z)=\cfrac{3.076+147.5z^{-1}}{56.21-85.33z^{-1}+31.52z^{-2}}\)。
+工作点-2V的闭环传递函数辨识结果如下图所示，幅频相关系数98.97118\%，相频相关系数99.91117\%，复频率
+拟合优度87.59657\%。辨识得到离散传递函数为：\(G(z)=\cfrac{198.6+1126z^{-1}}{59.41-51.02z^{-1}+12.35z^{-2}}\)。
 \begin{figure}[H]
     \begin{minipage}{0.5\textwidth}
         \centering
@@ -483,11 +498,11 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
         \caption{速度环工作点-2V数值解和解析解对比}
     \end{minipage}
 \end{figure}
-连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1886.5]和极点[-594.6755,-10.4050]，直流增益[16105]
-（零点-454.5和极点-454.4845、零点-124.0和极点-124.0023对消）。
+连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1964.2]和极点[-1870.7,-37.9]，直流增益[18622]
+（零极点-785.3±343.5j对消）。
 
-工作点-4V的闭环传递函数辨识结果如下图所示，幅频相关系数97.78603\%，相频相关系数89.92765\%，复频率
-拟合优度75.51571\%。辨识得到离散传递函数为：\(G(z)=\cfrac{2.764+153.2z^{-1}}{56.1-84.66z^{-1}+31.07z^{-2}}\)。
+工作点-4V的闭环传递函数辨识结果如下图所示，幅频相关系数98.51759\%，相频相关系数99.76702\%，复频率
+拟合优度84.81924\%。辨识得到离散传递函数为：\(G(z)=\cfrac{205.5+1146z^{-1}}{60.76-52.04z^{-1}+11.91z^{-2}}\)。
 \begin{figure}[H]
     \begin{minipage}{0.5\textwidth}
         \centering
@@ -502,42 +517,95 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
         \caption{速度环工作点-4V数值解和解析解对比}
     \end{minipage}
 \end{figure}
-连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1872.8]和极点[-607.3117,-11.6407]，直流增益[14719]
-（零点-462.4和极点-462.3980、零点-128.6和极点-128.5817对消）。
+连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1956.0]和极点[-1948.7,-27.1]，直流增益[25478]
+（零极点-814.9±156.0j对消）。
 
 将上述四个工作点的机械部分传递函数辨识结果汇总如下表所示。
 \begin{table}[H]
     \centering
-    \caption{各工作点机械部分传递函数\(G_m(s)\)辨识结果汇总}
-    \label{tab:各工作点Gm辨识结果汇总}
     \begin{tabular}{|c|c|c|c|c|c|c|}
         \hline
-        \multirow{2}{*}{工作点} & \multicolumn{3}{c|}{闭环辨识结果} & \multirow{2}{*}{极点（升序）} & \multirow{2}{*}{零点（升序）} & \multirow{2}{*}{直流增益} \\
+        \multirow{2}{*}{工作点} & \multicolumn{3}{c|}{闭环辨识结果} & \multirow{2}{*}{极点} & \multirow{2}{*}{零点} & \multirow{2}{*}{直流增益} \\
         \cline{2-4}
         & 幅频相关系数 & 相频相关系数 & 拟合优度 & & & \\
         \hline
-        \(U_q=-4\text{V}\) & 97.78603\% & 89.92765\% & 75.51571\% & -607.3117, -11.6407 & -2629.4, 1872.8 & 14719\\
+        \(U_q=-4\text{V}\) & 98.51759\% & 99.76702\% & 84.81924\% & -1948.7, -27.1 & -2629.4, 1956.0 & 25478\\
         \hline
-        \(U_q=-2\text{V}\) & 98.77557\% & 87.54160\% & 79.46672\% & -594.6755, -10.4050 & -2629.4, 1886.5 & 16105\\
+        \(U_q=-2\text{V}\) & 98.97118\% & 99.91117\% & 87.59657\% & -1870.7, -37.9 & -2629.4, 1964.2 & 18622\\
         \hline
-        \(U_q=2\text{V}\)  & 98.47246\% & 89.59097\% & 77.60275\% & -604.083, -12.2530  & -2629.4, 1913.4 & 13122\\
+        \(U_q=2\text{V}\)  & 99.08708\% & 99.91204\% & 88.14769\% & -1877.6, -39.5 & -2629.4, 1959.4 & 17398\\
         \hline
-        \(U_q=4\text{V}\)  & 98.44255\% & 88.89574\% & 75.70499\% & -618.6917, -10.1748 & -2629.4, 1774.3 & 16321\\
+        \(U_q=4\text{V}\)  & 98.41397\% & 99.79761\% & 83.84955\% & -1945.1, -21.0  & -2629.4, 1943.5 & 32510\\
         \hline
     \end{tabular}
+    \caption{各工作点机械部分传递函数\(G_m(s)\)辨识结果汇总}
+    \label{tab:各工作点Gm辨识结果汇总}
 \end{table}
 
-以四组辨识结果的均值作为最终的辨识结果，得到极点[-606.19068,-11.11839]、零点[-2629.38827,1861.76409]、直流增益
-[15066.81290]的机械传递函数：
-\begin{equation*}
-    G_m(s) = \frac{-15070s+2.805\times 10^7}{0.2762s^2 + 170.5s + 1862}
-\end{equation*}
+由表\ref{tab:各工作点Gm辨识结果汇总}可知，±2V工作点的拟合优度（87.60\%、88.15\%）均高于±4V（84.82\%、83.85\%），
+表明在小激励范围内系统的线性度更好。且±2V两组结果的零极点几乎一致（慢极点-37.9与-39.5、快极点-1870.7与-1877.6、
+右半零点1964.2与1959.4），反映了该激励范围内辨识结果的一致性。因此取±2V辨识结果的算术平均值作为参考模型，
+得到极点[-1874.2, -38.7]、零点[-2629.4, 1961.8]、直流增益[18010]的机械传递函数：
+\begin{equation}
+    G_m(s) = \frac{-18010s^2 - 1.202\times 10^7 s + 9.29\times 10^{10}}
+    {71.12s^2 + 1.36\times 10^5 s + 5.158\times 10^6}
+    \label{eq:Gm参考模型}
+\end{equation}
     
 \subsubsection{辨识结果的开环验证}
-根据\eqref{eq:Q轴电流-速度闭环传递函数表达式}，可以得到Q轴闭环传递函数：
+根据\eqref{eq:Q轴电流-速度闭环传递函数表达式}，可以得到Q轴反电动势闭环传递函数：
 \begin{equation*}
-    G(s)=\cfrac{-3055 s^2 - 2.345\times10^6 s + 1.496\times 10^{10}}
-    {1.575 s^3 + 5070 s^2 + 2.534\times 10^6 s + 2.396\times 10^{8}}
+    G(s)=\cfrac{-3774 s^2 - 2.068\times10^6 s + 2.065\times 10^{10}}
+    {2.298 s^3 + 7367 s^2 + 3.607\times 10^6 s +3.238\times 10^{8}}
+\end{equation*}
+
+由于电机的速度来源与对角度传感器的微分，微分噪声极大，因此在开环和后续的闭环验证中需要加入低通滤波器
+\(F(z)=\cfrac{0.1}{1-0.9z^{-1}}\)
+\footnote{辨识时不加入该滤波器，主要出于两方面考虑。其一，滤波器串联后辨识得到的是\(F(z)\times\text{ZOH}[G_m(s)]\)的级联模型，
+从中分离\(G_m(s)\)需进行反卷积，会引入额外不确定性。其二，\(F(z)\)的极点\(z=0.9\)对应连续域频率远高于机械带宽，
+Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟合该快动态，在有限数据长度下会削弱机械模态的估计精度。实测结果也表明，
+加入\(F(z)\)尽管转速信号更加平滑，但辨识的拟合优度和幅相频相关系数均有下降，模型与实测波形的吻合程度也不及不加滤波器时。
+因此采用分步策略——辨识时直接获取\(G_m(s)\)，验证时在输出端串联\(F(z)\)实现物理模型与测量滤波的解耦。}。
+此时系统框图变为：
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[auto, node distance=2cm, >=latex']
+        % 样式定义
+        \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=1.5em, align=center]
+        \tikzstyle{sum} = [draw, circle, node distance=1.5cm, minimum size=0.5em, inner sep=0pt]
+        \tikzstyle{input} = [coordinate]
+        \tikzstyle{output} = [coordinate]
+        \tikzstyle{feedback} = [coordinate]
+
+        % 放置节点
+        \node [input, name=input] {};
+        \node [sum, right of=input] (sum) {};
+        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_s+L_q s}\)};
+        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_m\)};
+        \node [block, right of=K] (Mech) {\(G_m(s)\)};
+        \node [block, right of=Mech] (ZOH) {ZOH};
+        \node [block, right of=ZOH] (F) {\(F(z)\)};
+        \node [output, right of=F] (output) {};
+        \node [block, below of=K, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
+
+        \draw [->] (input) -- node {\(U_q\)} (sum);
+        \draw [->] (sum) -- node {\(U_q'\)} (RL);
+        \draw [->] (RL) -- node {\(i_q\)} (K);
+        \draw [->] (K) -- node {\(T_e\)} (Mech);
+        \draw [->] (Mech) -- node [name=y] {\(n\)} (ZOH);
+        \draw [->] (ZOH) -- node {} (F);
+        \draw [->] (F) -- node {\(n_{fi}\)} (output);
+        \draw [->] (y) |- (Kf);
+        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.5] {\(E\)} (sum);
+    \end{tikzpicture}
+    \caption{\(i_d=0\)假设下的Q轴电流-速度系统框图（带低通滤波器）}
+    \label{fig:Q轴电流-速度系统框图（带低通滤波器）}
+\end{figure}
+
+因此实际闭环传递函数应为使用零阶保持器离散化后与离散低通滤波器\(F(z)\)相乘的结果：
+\begin{equation*}
+    G(z)=\cfrac{0.3297 z^{-1} + 1.85 z^{-2} - 0.1351 z^{-3}}
+    {1- 1.832 z^{-1} + 1.108 z^{-2} - 0.2565z^ {-3} + 0.0134z^{-4}}
 \end{equation*}
 
 选用幅值为±5V的方波信号作为激励信号，输入到\(U_q\)，同时进行D轴闭环\(i_d^*=0\)，在电机空载的情况下记录电机的转速响应。
@@ -547,20 +615,20 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 \begin{figure}[H]
     \begin{minipage}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.6\textwidth]  
+        \includegraphics[width=\textwidth]  
         {图片/速度环正向方波反电动势对比.png}
         \caption{速度环正向方波反电动势对比}
     \end{minipage}
     \begin{minipage}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.6\textwidth]
+        \includegraphics[width=\textwidth]
         {图片/速度环正向方波电磁转矩对比.png}
         \caption{速度环正向方波电磁转矩对比}
     \end{minipage}
     \label{fig:速度环正向方波理想id与实际id对比}
 \end{figure}
 
-分析可得反电动势相关系数99.99064\%，拟合优度98.63086\%；电磁转矩相关系数99.99932\%，拟合优度99.55472\%为极高水平，\(i_d=0\)的
+分析可得反电动势相关系数99.99988\%，拟合优度99.84557\%；电磁转矩相关系数100.00000\%，拟合优度99.97289\%为极高水平，\(i_d=0\)的
 理想化假设可以认为是遵守的。此时仿真和实测的转速波形如下图所示。
 \begin{figure}[H]
     \centering
@@ -570,26 +638,26 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
     \label{fig:速度环正向方波转速对比}
 \end{figure}
 
-两个时域波形的相关系数99.81693\%，拟合优度92.64821\%，辨识模型能够较好地解释电机的响应。
+两个时域波形的相关系数99.85915\%，拟合优度93.11630\%。
 
 负向方波作用下电动势和电磁转矩波形如下图所示。
 \begin{figure}[H]
     \begin{minipage}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.6\textwidth]
+        \includegraphics[width=\textwidth]
         {图片/速度环负向方波反电动势对比.png}
         \caption{速度环负向方波反电动势对比}
     \end{minipage}
     \begin{minipage}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.6\textwidth]
+        \includegraphics[width=\textwidth]
         {图片/速度环负向方波电磁转矩对比.png}
         \caption{速度环负向方波电磁转矩对比}
     \end{minipage}
     \label{fig:速度环负向方波理想id与实际id对比}
 \end{figure}
 
-分析可得反电动势相关系数99.98882\%，拟合优度98.50403\%；电磁转矩相关系数99.99929\%，拟合优度99.52759\%为极高水平，
+分析可得反电动势相关系数99.99990\%，拟合优度99.84985\%；电磁转矩相关系数99.99999\%，拟合优度99.95191\%为极高水平，
 同样遵守\(i_d=0\)的理想化假设。此时仿真和实测的转速波形如下图所示。
 \begin{figure}[H]
     \centering
@@ -599,6 +667,288 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
     \label{fig:速度环负向方波转速对比}
 \end{figure}
 
-两个时域波形的相关系数99.75699\%，拟合优度92.57635\%，辨识模型同样可以较为准确地解释电机的响应。
+两个时域波形的相关系数99.92870\%，拟合优度95.71185\%。
+
+据图\ref{fig:速度环负向方波转速对比}和图\ref{fig:速度环负向方波转速对比}可知，在暂态响应段仿真和实测波形高度一致。
+而接近稳态时角加速度趋零，惯性力矩\(J\cfrac{dn}{dt}\)随之消失，齿槽转矩作为周期性扰动在速度波形上显现出来，
+但振荡的均值与仿真波形的均值一致。说明建立的系统模型能够较为准确地解释电机的响应，但对非线性的齿槽转矩确实无法实现建模。
 
 \subsection{速度环频域矫正控制器设计与闭环验证}
+\subsubsection{速度环被控对象建模}
+速度环频域矫正控制器仍采用与电流环相同的带积分环节超前校正结构，但被控对象不同于电流环的纯RL电路，
+需要考虑反电动势反馈路径的物理存在。
+
+在\ref{sec:电流环频域矫正控制器设计}中Q轴电流环控制器\(C_q(s)\)按被控对象为纯RL电路模型\(\cfrac{1}{R_s+L_q s}\)设计，
+并通过方波短脉冲测试（0.33ms内转速不发生明显变化）验证了该设计的有效性。但在速度环闭环控制中，转速\(n\)在秒级时间内大幅变化，
+反电动势\(\omega_e\psi_m\)随转速动态变化，不再能视为常数扰动。此时从电流给定\(i_q^*\)到转速\(n\)的物理被控对象包含反电动势反馈路径，
+其传递函数为：
+
+\begin{equation*}
+    G_{\text{speed}}(s)=\cfrac{n(s)}{i_q^*(s)}=
+    \cfrac{C_q(s)\times\cfrac{1}{R_s+L_q s}\times\cfrac{3}{2}p\psi_m\times G_m(s)}
+    {1+\cfrac{\pi}{30}p\psi_m\times\cfrac{1}{R_s+L_q s}\times\cfrac{3}{2}p\psi_m\times G_m(s)
+    +C_q(s)\times\cfrac{1}{R_s+L_q s}}
+\end{equation*}
+
+代入平均模型\eqref{eq:Gm参考模型}，进行ZOH按照采样频率1kHz离散化后经过低通滤波器\(F(z)=\cfrac{0.1}{1-0.9z^{-1}}\)，
+可得等价离散化被控对象模型：
+\begin{equation*}
+    G_{s}(z)=
+    \cfrac{
+        \begin{array}[t]{@{}l@{}}
+            3.64 z^{-1} + 0.1336 z^{-2} - 14.89 z^{-3} + 16.53 z^{-4} - 6.515 z^{-5} + 1.23 z^{-6} \\
+            - 0.1204 z^{-7} + 0.005894 z^{-8} - 0.000114 z^{-9} + 1.451\times 10^{-9}z^{-10} - 1.205\times 10^{-19}z^{-11}
+        \end{array}}
+        {
+        \begin{array}[t]{@{}l@{}}
+            1 - 4.386 z^{-1} + 7.803 z^{-2} - 7.221 z^{-3} + 3.729 z^{-4} - 1.094 z^{-5} + 0.1861 z^{-6} \\
+            - 0.018 z^{-7} + 0.000907 z^{-8} - 1.833\times 10^{-5} z^{-9} + 1.823\times 10^{-10} z^{-10} - 7.226\times 10^{-16} z^{-11} \\
+            + 6.004\times 10^{-26}z^{-12}
+        \end{array}}
+\end{equation*}
+
+此时的双闭环控制系统框图如下图所示：
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[auto, node distance=1.75cm, >=latex']
+        % 样式定义
+        \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=1.8em, align=center, inner sep=2pt]
+        \tikzstyle{sum} = [draw, circle, node distance=1.5cm, minimum size=0.35em, inner sep=0pt]
+        \tikzstyle{input} = [coordinate]
+        \tikzstyle{output} = [coordinate]
+        \tikzstyle{feedback} = [coordinate]
+
+        % 放置节点
+        \node [input, name=input] {};
+        \node [sum, right of=input] (sum1) {};
+        \node [block, right of=sum1] (Cs) {\(C_s(s)\)};
+        \node [sum, right of=Cs] (sum2) {};
+        \node [block, right of=sum2] (Cq) {\(C_q(s)\)};
+        \node [sum, right of=Cq] (sum) {};
+        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_s+L_q s}\)};
+        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_m\)};
+        \node [block, right of=K] (Mech) {\(G_m(s)\)};
+        \node [block, right of=Mech] (ZOH) {ZOH};
+        \node [block, right of=ZOH] (Filter) {\(\cfrac{0.1}{1-0.9z^{-1}}\)};
+        \node [output, right of=Filter] (output) {};
+        \node [block, below of=Mech, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
+        \node [feedback, below of=sum, node distance=3.5cm] (F) {};
+        \node [feedback, below of=Cq,node distance=2.5cm] (Fb) {};
+
+        \draw [->] (input) -- node {\(n^*\)} (sum1);
+        \draw [->] (sum1) -- node {\(\Delta n\)} (Cs);
+        \draw [->] (Cs) -- node {\(i_q^*\)} (sum2);
+        \draw [->] (sum2) -- node {\(\Delta i_q\)} (Cq);
+        \draw [->] (Cq) -- node {\(U_q\)} (sum);
+        \draw [->] (sum) -- node {} (RL);
+        \draw [->] (RL) -- node [name=iq] {\(i_q\)} (K);
+        \draw [->] (K) -- node {\(T_e\)} (Mech);
+        \draw [->] (Mech) -- node [name=y] {\(n\)} (ZOH);
+        \draw [->] (ZOH) -- node {} (Filter);
+        \draw [->] (Filter) -- node [name=y_fi] {\(\hat{n}\)} (output);
+        % 反电动势反馈
+        \draw [->] (y) |- (Kf);
+        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.6] {\(E\)} (sum);
+        % i_q反馈：在交叉点处加桥接小弧（跳线），与反电动势线路交叉但不连接
+        \coordinate (cross) at (iq |- Kf);
+        \coordinate (jT) at ([yshift=0.12cm] cross);
+        \coordinate (jB) at ([yshift=-0.12cm] cross);
+        \draw [-] (iq) -- (jT);
+        \draw [-] (jT) -- ++(0.12, -0.1) -- ++(0, -0.04) -- ++(-0.12, -0.1);
+        \draw [-] (jB) |- (Fb);
+        \draw [->] (Fb) -| node[pos=0.9] {$-$} node [pos=0.6] {} (sum2);
+        \draw [-] (y_fi) |- (F);
+        \draw [->] (F) -| node[pos=0.9] {$-$} node [pos=0.6] {} (sum1);
+    \end{tikzpicture}
+    \caption{Q轴双闭环控制系统框图}
+    \label{fig:Q轴双闭环控制系统框图}
+\end{figure}
+
+\subsection{速度环频域矫正控制器设计与闭环验证}
+为了实现无静差跟踪，在被控对象前串入积分环节。构成等价被控对象，开环伯德图如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/带积分环节的速度环等价被控对象开环频率特性.png}
+    \caption{带积分环节的速度环等价被控对象开环频率特性}
+\end{figure}
+
+与电流环控制器一样，采用一阶超前校正控制\(C_s(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，开环截止频率设定为12Hz，
+以不低于40°的相位裕度为目标，在12Hz处提供最多65°的相位补偿，可以计算得到：
+\begin{equation*}
+    \begin{cases}
+        \alpha = \cfrac{1-\sin(65°)}{1+\sin(65°)}=0.0491\\
+        T = \cfrac{1}{2\pi\times 12\sqrt{\alpha}} = 0.0598
+    \end{cases}
+\end{equation*}
+
+最后根据等价被控对象在12Hz处的增益，调整放大系数K，最终可得带积分的速度环超前控制器：
+\begin{equation*}
+    C_s(s)=\cfrac{0.0007477s+0.0125}{0.00294s^2+s}
+\end{equation*}
+
+使用双线性变换离散化后得到：
+\begin{equation*}
+    C_s(z)=\cfrac{0.0001096+1.817\times 10^{-6}z^{-1}-0.0001078z^{-2}}{1-1.7093z^{-1}+0.7093z^{-2}}
+\end{equation*}
+
+经过超前控制后的开环频率特性和闭环频率特性如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]
+    {图片/速度环开-闭环频率特性.png}
+    \caption{速度环开-闭环频率特性}
+\end{figure}
+
+矫正后，速度环的开环截止频率12.00005Hz，相位裕度50.58835°满足设计要求。相位穿越频率28.61439Hz，
+幅值裕度12.05833dB，闭环带宽21.26734Hz。闭环前后的单位阶跃响应如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]
+    {图片/速度环开-闭环单位阶跃响应对比.png}
+    \caption{速度环开-闭环单位阶跃响应对比}
+\end{figure}
+
+可以发现，通过带积分环节的超前校正控制器，使得能够无差跟踪给定信号，超调量13.2\%，调节时间为0.149s，用一定的超调
+换来了极快的响应速度。接下来考虑以±150rpm的方波速度给定信号（持续500个采样周期）进行测试，以评估实际系统响应和
+建模准确性，结果如下图所示。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环正向方波闭环验证.png}
+        \caption{速度环正向方波闭环验证}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环负向方波闭环验证.png}
+        \caption{速度环负向方波闭环验证}   
+    \end{minipage}
+\end{figure}
+
+与开环验证结果类似，仿真和实测波形在暂态段基本一致。进入稳态后惯性力矩趋于零，
+齿槽转矩作为周期性扰动凸显出来，此时即使用闭环控制器也无法完全消除其带来的转速振荡，因此稳态段偏差较大。
+正向方波相关系数99.36592\%，拟合优度87.77175\%；
+负向方波相关系数99.48086\%，拟合优度89.16718\%，拟合水平低于电流闭环验证。
+原因有三：其一，速度回路的非线性干扰强度和来源均高于电路部分，线性传递函数的拟合精度天然更低；
+其二，速度环辨识在Q轴电流闭环下进行，闭环效应（积分饱和、输出限幅）使系统特性较开环时更为复杂，降低了验证结果的准确性；
+其三，电路部分有明确的解析结构（一阶RL电路），可据此修正辨识偏差，而速度环被控对象即使采用
+经典的\(\cfrac{1}{Js+B}\)模型，也在该电机上存在显著的不适配。
+辨识结果的可信度因而更低。但整体上拟合优度均大于85\%，仍属可接受范围。
+
+最后，在上述测试过程中对\(i_d=0\)的理想化假设验证如下图所示。
+正向方波闭环测试过程中，反电动势相关系数99.99993\%，拟合优度99.88303\%；电磁转矩相关系数100.00000\%，拟合优度99.98068\%；
+负向方波闭环测试过程中，反电动势相关系数99.99992\%，拟合优度99.87259\%；电磁转矩相关系数100.00000\%，拟合优度99.98071\%。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环正向闭环方波反电动势对比.png}
+        \caption{速度环正向闭环方波反电动势对比}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环正向闭环方波电磁转矩对比.png}
+        \caption{速度环正向闭环方波电磁转矩对比}
+    \end{minipage}
+\end{figure}
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环负向闭环方波反电动势对比.png}
+        \caption{速度环负向闭环方波反电动势对比}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/速度环负向闭环方波电磁转矩对比.png}
+        \caption{速度环负向闭环方波电磁转矩对比}
+    \end{minipage}
+\end{figure}
+
+上述测试证实了在\(i_d=0\)控制下反电动势与电磁转矩的理想化假设均成立，且模型精度极高。
+那么进行反电动势前馈补偿，以进一步改善速度环响应应当是可行的。
+为此，在\(C_Q(s)\)输出端叠加前馈项\(\hat{E}=\cfrac{\pi}{30}np\hat{\psi}_m\)，加入前馈后的系统框图如下图所示。
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[auto, node distance=1.75cm, >=latex']
+        % 样式定义
+        \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=1.8em, align=center, inner sep=2pt]
+        \tikzstyle{sum} = [draw, circle, node distance=1.5cm, minimum size=0.35em, inner sep=0pt]
+        \tikzstyle{input} = [coordinate]
+        \tikzstyle{output} = [coordinate]
+        \tikzstyle{feedback} = [coordinate]
+
+        % 放置节点
+        \node [input, name=input] {};
+        \node [sum, right of=input] (sum1) {};
+        \node [block, right of=sum1] (Cs) {\(C_s(s)\)};
+        \node [sum, right of=Cs] (sum2) {};
+        \node [block, right of=sum2] (Cq) {\(C_q(s)\)};
+        \node [sum, right of=Cq] (sum) {};
+        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_s+L_q s}\)};
+        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_m\)};
+        \node [block, right of=K] (Mech) {\(G_m(s)\)};
+        \node [block, right of=Mech] (ZOH) {ZOH};
+        \node [block, right of=ZOH] (Filter) {\(\cfrac{0.1}{1-0.9z^{-1}}\)};
+        \node [output, right of=Filter] (output) {};
+        \node [block, below of=Mech, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
+        \node [feedback, below of=sum, node distance=3.5cm] (F) {};
+        \node [feedback, below of=Cq,node distance=2.5cm] (Fb) {};
+        \node [block, above of=ZOH, node distance=1.5cm] (FF) {\(\cfrac{\pi}{30}p\hat{\psi}_m\)};
+
+        \draw [->] (input) -- node {\(n^*\)} (sum1);
+        \draw [->] (sum1) -- node {\(\Delta n\)} (Cs);
+        \draw [->] (Cs) -- node {\(i_q^*\)} (sum2);
+        \draw [->] (sum2) -- node {\(\Delta i_q\)} (Cq);
+        \draw [->] (Cq) -- node {\(U_q\)} (sum);
+        \draw [->] (sum) -- node {} (RL);
+        \draw [->] (RL) -- node [name=iq] {\(i_q\)} (K);
+        \draw [->] (K) -- node {\(T_e\)} (Mech);
+        \draw [->] (Mech) -- node [name=y] {\(n\)} (ZOH);
+        \draw [->] (ZOH) -- node {} (Filter);
+        \draw [->] (Filter) -- node [name=y_fi] {\(\hat{n}\)} (output);
+        % 反电动势反馈
+        \draw [->] (y) |- (Kf);
+        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.6] {\(E\)} (sum);
+        % i_q反馈：在交叉点处加桥接小弧（跳线），与反电动势线路交叉但不连接
+        \coordinate (cross) at (iq |- Kf);
+        \coordinate (jT) at ([yshift=0.12cm] cross);
+        \coordinate (jB) at ([yshift=-0.12cm] cross);
+        \draw [-] (iq) -- (jT);
+        \draw [-] (jT) -- ++(0.12, -0.1) -- ++(0, -0.04) -- ++(-0.12, -0.1);
+        \draw [-] (jB) |- (Fb);
+        \draw [->] (Fb) -| node[pos=0.9] {$-$} node [pos=0.6] {} (sum2);
+        \draw [-] (y_fi) |- (F);
+        \draw [->] (F) -| node[pos=0.9] {$-$} node [pos=0.6] {} (sum1);
+        \draw [->] (y_fi) |- (FF);
+        \draw [->] (FF) -| node[pos=0.6] {\(\hat{E}\)} (sum);
+    \end{tikzpicture}
+    \caption{Q轴双闭环控制系统框图}
+    \label{fig:Q轴双闭环控制系统框图}
+\end{figure}
+
+采用原先的控制器，分别测试在前馈补偿前后的方波响应，结果如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]
+    {图片/前馈补偿对比.png}
+    \caption{前馈补偿对比}
+\end{figure}
+
+可以发现，补偿前后响应有所改善，但没有达到质变的程度。
+分析其原因在于反电动势在奇异摄动系统中的双重属性。对闭环带宽高达2kHz、控制采样频率15kHz的电流内环而言，反电动势
+近似于缓慢变化的直流扰动（因为在设计时没有考虑），设计的控制器\(C_Q(s)\)能够很好地压制其作用。而
+对于闭环带宽仅21Hz、控制采样频率1kHz的速度外环而言，反电动势的变化正好落在其核心工作频段内。
+
+上述双重属性带来了两个影响，其一是电流环控制器本身足以压制反电动势扰动，前馈补偿带来的收益有限；其二是对于速度环
+被控对象设计而言反电动势的物理路径依然存在且不可忽略，求解速度环被控对象时仍然要在电流环和反电动势闭环耦合的情况下
+进行。若直接忽视反电动势闭环简化被控对象求解，会过于乐观地轻视了被控对象的复杂特性，设计出的控制器基本不可用
+\footnote{经测试，即使用很保守的参数设计控制器依然会导致系统发散}。
+
+综上所述，本章采用的分步策略：电流环控制器设计、含反电动势的速度环建模、频域校正设计在电机控制器设计上是
+更鲁棒的做法，而反电动势的前馈补偿在这其中并不是必要步骤。
