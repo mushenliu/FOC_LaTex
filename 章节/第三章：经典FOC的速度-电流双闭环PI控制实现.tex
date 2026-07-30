@@ -81,7 +81,7 @@ LDO采用德州仪器的TLV75733PDBVR，封装小（SOT-23-5），PSRR高（52dB
 \end{figure}
 
 其他设备包括电源指示灯、串口（向上位机发送数据）、母线电压采集电路（用于监控供电电压）等。值得一提的是母线电压检测电路。根据SVPWM计算公式
-\eqref{eq:SVPWM占空比表达式}可以发现，计算三相占空比依赖母线电压\(U_{\mathrm{dc}}\)。对于云台电机，工作电压范围为12V到24V，母线电压差距较大。为了
+\eqref{eq:三相占空比表达式}可以发现，计算三相占空比依赖母线电压\(U_{\mathrm{dc}}\)。对于云台电机，工作电压范围为12V到24V，母线电压差距较大。为了
 确保三相占空比计算正确，通过母线电压检测电路，让MCU通过ADC检测母线电压用于计算是很重要的。而供电一侧往往通过电池或可调直流电源实现，
 电压波动较小，其主要信息集中在低频段，因此通过低通滤波电路滤除高频干扰，避免因为采集噪声导致三相占空比计算出错。
 母线电压检测电路如下图\ref{fig:母线电压检测电路}所示。通过\(R_{\mathrm{4}},R_{\mathrm{5}}\)实现\(\cfrac{1.33\mathrm{k}\Omega}{10\mathrm{k}\Omega+1.33\mathrm{k}\Omega}=0.1173\)
@@ -874,7 +874,7 @@ void Discrete_PID_Controller(Discrete_PID_Struct* PID)
 }
 \end{lstlisting}
 
-SVPWM调制按照\eqref{eq:零序分量表达式}和\eqref{eq:SVPWM占空比表达式}计算即可。但根据电压极限圆表达式\eqref{eq:SVPWM电压极限圆}，
+SVPWM调制按照\eqref{eq:零序分量表达式}和\eqref{eq:三相占空比表达式}计算即可。但根据电压极限圆表达式\eqref{eq:SVPWM电压极限圆}，
 需要检查给定的\(U_{\mathrm{d}},U_{\mathrm{q}}\)是否在电压极限圆内。如果不在电压极限圆内，需要进行线性放缩。相关函数如下所示。
 
 \begin{lstlisting}

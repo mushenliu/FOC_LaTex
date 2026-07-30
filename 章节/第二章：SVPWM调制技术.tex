@@ -77,6 +77,7 @@ SVPWM（Space Vector Pulse Width Modulation，空间矢量脉宽调制）
 \times100\%= 100\%\)。
 
 \subsection{SVPWM调制法}
+\label{sec:SVPWM调制法}
 
 SVPWM调制法是基本的SVPWM实现方法，其物理含义直观，但是程序运行效率较低，
 这是因为需要经过扇区判断、基本矢量作用时间计算、三相占空比计算三个步骤。
@@ -415,39 +416,164 @@ SVPWM调制通过在基波基础上注入三倍频率的三角波实现了
     \label{fig:原始相电压波形与零序分量波形}
 \end{figure}
 
-设克拉克-帕克逆变换得到的三相电压为\(U_{\mathrm{a}},U_{\mathrm{b}},U_{\mathrm{c}}\)。
-其中的最大值为\(U_{\mathrm{\max}}=\max(U_{\mathrm{a}},U_{\mathrm{b}},U_{\mathrm{c}})\)
-最小值为\(U_{\mathrm{\min}}=\min(U_{\mathrm{a}},U_{\mathrm{b}},U_{\mathrm{c}})\)
-则零序分量将会满足（具体严格的推导个人能力不足，在此省略）
+设期望的\(U_{\mathrm{d}},U_{\mathrm{q}}\)经过克拉克-帕克逆变换得到的三相原始相电压为
+\(U_{\mathrm{a}},U_{\mathrm{b}},U_{\mathrm{c}}\)。
+注入零序分量\(U_{\mathrm{0}}\)后，调制相电压为：
 \begin{equation}
-    U_{\mathrm{0}}=-\cfrac 12(U_{\mathrm{\max}}+U_{\mathrm{\min}})
-    \label{eq:零序分量表达式}
+    \begin{cases}
+        U_{\mathrm{a}}' = U_{\mathrm{a}} + U_{\mathrm{0}}\\
+        U_{\mathrm{b}}' = U_{\mathrm{b}} + U_{\mathrm{0}}\\
+        U_{\mathrm{c}}' = U_{\mathrm{c}} + U_{\mathrm{0}}   
+    \end{cases}
+    \label{eq:注入后相电压}
 \end{equation}
 
-通过零序分量注入后，SVPWM调制相电压表达式为
+可以发现，零序分量注入前后线电压维持恒定：
 \begin{equation*}
     \begin{cases}
-        U_{\mathrm{a}}'&=U_{\mathrm{a}}+U_{\mathrm{0}}\\
-        U_{\mathrm{b}}'&=U_{\mathrm{b}}+U_{\mathrm{0}}\\
-        U_{\mathrm{c}}'&=U_{\mathrm{c}}+U_{\mathrm{0}}
+        U_{\mathrm{ab}}' = U_{\mathrm{a}}' - U_{\mathrm{b}}'
+        = U_{\mathrm{a}} - U_{\mathrm{b}} = U_{\mathrm{ab}}\\
+        U_{\mathrm{bc}}' = U_{\mathrm{b}}' - U_{\mathrm{c}}'
+        = U_{\mathrm{b}} - U_{\mathrm{c}} = U_{\mathrm{bc}}\\
+        U_{\mathrm{ca}}' = U_{\mathrm{c}}' - U_{\mathrm{a}}'
+        = U_{\mathrm{c}} - U_{\mathrm{a}} = U_{\mathrm{ca}}
     \end{cases}
 \end{equation*}
 
-因此SVPWM计算法的三相占空比表示为
-\begin{equation}
+因此无论\(U_{\mathrm{0}}\)取何值，线电压波形始终保持不变。
+也就是说，在线性调制的前提下，零序分量注入与否不影响实际的电机运行
+\footnote{电机运行主要取决于线电压而不是相电压。}。但零序分量注入后，
+相同线电压需要的相电压幅值降低，相当于扩大了线性调制区间。
+为保证线性调制（不进入过调制区），调制后的三相相电压必须限制在
+直流母线电压范围内：
+\begin{equation*}
+    -\cfrac{U_{\mathrm{dc}}}{2} \le U_{\mathrm{a}}',U_{\mathrm{b}}',U_{\mathrm{c}}'
+    \le \cfrac{U_{\mathrm{dc}}}{2}
+\end{equation*}
+
+记三相原始电压的最大值和最小值分别为
+\begin{equation*}
     \begin{cases}
-        D_{\mathrm{A}}=\cfrac 12+\cfrac{U_{\mathrm{a}}'}{U_{\mathrm{dc}}}=
-        \cfrac{1}{2}+\cfrac{U_{\mathrm{a}}+U_{\mathrm{0}}}{U_{\mathrm{dc}}}
-        \\
-        D_{\mathrm{B}}=\cfrac 12+\cfrac{U_{\mathrm{b}}'}{U_{\mathrm{dc}}}=\cfrac{1}{2}+
-        \cfrac{U_{\mathrm{b}}+U_{\mathrm{0}}}{U_{\mathrm{dc}}}
-        \\
-        D_{\mathrm{C}}=\cfrac 12+\cfrac{U_{\mathrm{c}}'}{U_{\mathrm{dc}}}=\cfrac{1}{2}+
-        \cfrac{U_{\mathrm{c}}+U_{\mathrm{0}}}{U_{\mathrm{dc}}}
-    \end{cases}\
-    \label{eq:SVPWM占空比表达式}
+        U_{\mathrm{\max}} = \max(U_{\mathrm{a}},U_{\mathrm{b}},U_{\mathrm{c}})\\
+        U_{\mathrm{\min}} = \min(U_{\mathrm{a}},U_{\mathrm{b}},U_{\mathrm{c}})
+    \end{cases}
+\end{equation*}
+
+则上述电压范围约束等价于对调制后最大相电压和最小相电压的要求：
+\begin{equation*}
+    \begin{cases}
+        U_{\mathrm{\min}} + U_{\mathrm{0}} \ge -\cfrac{U_{\mathrm{dc}}}{2}\\[8pt]
+        U_{\mathrm{\max}} + U_{\mathrm{0}} \le \cfrac{U_{\mathrm{dc}}}{2}
+    \end{cases}
+\end{equation*}
+
+满足上式的\(U_{\mathrm{0}}\)有无穷多个，
+而SVPWM选择的策略为居中对称，
+令调制后最大相电压到上边界的电压裕量\(\cfrac{U_{\mathrm{dc}}}{2}-(U_{\mathrm{\max}}+U_{\mathrm{0}})\)
+与最小相电压到下边界的电压裕量\((U_{\mathrm{\min}}+U_{\mathrm{0}})-(-\cfrac{U_{\mathrm{dc}}}{2})\)
+保持相等，即：
+\begin{equation*}
+    \cfrac{U_{\mathrm{dc}}}{2} - (U_{\mathrm{\max}} + U_{\mathrm{0}})
+    = (U_{\mathrm{\min}} + U_{\mathrm{0}}) + \cfrac{U_{\mathrm{dc}}}{2}
+\end{equation*}
+
+化简得：
+\begin{equation}
+    U_{\mathrm{0}} = -\cfrac{1}{2}(U_{\mathrm{\max}} + U_{\mathrm{\min}})
+    \label{eq:零序分量表达式}
 \end{equation}
 
-可见通过SVPWM计算法，大大省略了调制法需要的查表运算，无需
+因此就可以得到计算法的三相占空比表达式：
+\begin{equation}
+    \begin{cases}
+        D_{\mathrm{A}} = \cfrac{1}{2} +\cfrac{U_{\mathrm{0}}+U_{\mathrm{a}}}{U_{\mathrm{dc}}}\\
+        D_{\mathrm{B}} = \cfrac{1}{2} +\cfrac{U_{\mathrm{0}}+U_{\mathrm{b}}}{U_{\mathrm{dc}}}\\
+        D_{\mathrm{C}} = \cfrac{1}{2} +\cfrac{U_{\mathrm{0}}+U_{\mathrm{c}}}{U_{\mathrm{dc}}}
+    \end{cases}
+    \label{eq:三相占空比表达式}
+\end{equation}
+
+式\eqref{eq:零序分量表达式}即为SVPWM零序分量的解析表达式。相关的波形示意如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/零序分量计算相关波形.png}
+    \caption{零序分量计算相关波形示意}
+    \label{fig:零序分量计算相关波形示意}
+\end{figure}
+
+接下来以第I扇区为例，证明\eqref{eq:零序分量表达式}零序分量注入的结果与第\ref{sec:SVPWM调制法}节中给出的调制法结果一致。
+根据调制法中间步骤，中间变量满足：
+\begin{equation*}
+    \begin{cases}
+        A_0 = U_{\mathrm{\beta}}\\
+        A_1 = \cfrac{\sqrt{3}}{2}U_{\mathrm{\alpha}} - \cfrac{1}{2}U_{\mathrm{\beta}}\\
+        A_2 = -\cfrac{\sqrt{3}}{2}U_{\mathrm{\alpha}} - \cfrac{1}{2}U_{\mathrm{\beta}}\\
+        K = \cfrac{\sqrt{3}T_{\mathrm{s}}}{U_{\mathrm{dc}}}
+    \end{cases}
+\end{equation*}
+
+由表\ref{tab:基本矢量作用时间计算表(TU1,TU2表示)}可知，
+第I扇区有\(T_{\mathrm{U1}} = KA_1\)，\(T_{\mathrm{U2}} = KA_0\)，
+而\(T_0=T_{\mathrm{s}}-T_{\mathrm{U1}}-T_{\mathrm{U2}}\)，
+代入占空比定义可得：
+\begin{equation*}
+    \begin{cases}
+        D_0=\cfrac{T_0}{2T_{\mathrm{s}}}=\cfrac{1}{2}(1-\cfrac{\sqrt{3}A_1}{U_{\mathrm{dc}}}
+        -\cfrac{\sqrt{3}A_0}{U_{\mathrm{dc}}})\\
+        D_1=D_0+\cfrac{T_{\mathrm{U2}}}{T_{\mathrm{s}}}=\cfrac{1}{2}(1-\cfrac{\sqrt{3}A_1}{U_{\mathrm{dc}}}
+        +\cfrac{\sqrt{3}A_0}{U_{\mathrm{dc}}})\\
+        D_2=D_1+\cfrac{T_{\mathrm{U1}}}{T_{\mathrm{s}}}=\cfrac{1}{2}(1+\cfrac{\sqrt{3}A_1}{U_{\mathrm{dc}}}
+        +\cfrac{\sqrt{3}A_0}{U_{\mathrm{dc}}})
+    \end{cases}
+\end{equation*}
+
+由表\ref{tab:三相占空比计算表}，第I扇区三相占空比分配为
+A相\(D_2\)、B相\(D_1\)、C相\(D_0\)。
+相较于虚拟中性点\(\cfrac{1}{2}U_{\mathrm{dc}}\)的调制相电压由占空比决定：
+\begin{equation*}
+    \begin{cases}
+        U_{\mathrm{a,M}}' = (D_{\mathrm{A}}-\cfrac{1}{2})U_{\mathrm{dc}}=(D_{2}-\cfrac{1}{2})U_{\mathrm{dc}}
+        =\cfrac{\sqrt{3}}{2}(A_0 + A_1)\\
+        U_{\mathrm{b,M}}' = (D_{\mathrm{B}}-\cfrac{1}{2})U_{\mathrm{dc}}=(D_{1}-\cfrac{1}{2})U_{\mathrm{dc}}
+        =\cfrac{\sqrt{3}}{2}(A_0 - A_1)\\
+        U_{\mathrm{c,M}}' = (D_{\mathrm{C}}-\cfrac{1}{2})U_{\mathrm{dc}}=(D_{0}-\cfrac{1}{2})U_{\mathrm{dc}}
+        =\cfrac{\sqrt{3}}{2}(-A_0 - A_1)
+    \end{cases}
+\end{equation*}
+
+另一边，根据克拉克变换\eqref{eq:克拉克变换}，原始三相电压可以用逻辑向量\(A_0,A_1\)表示为：
+\begin{equation*}
+    \begin{cases}
+        U_{\mathrm{a}} = U_{\mathrm{\alpha}}
+        = \cfrac{1}{\sqrt{3}}(2A_1 + A_0)\\
+        U_{\mathrm{b}} = -\cfrac{1}{2}U_{\mathrm{\alpha}} + \cfrac{\sqrt{3}}{2}U_{\mathrm{\beta}}
+        = \cfrac{1}{\sqrt{3}}(A_0-A_1)\\
+        U_{\mathrm{c}} = -\cfrac{1}{2}U_{\mathrm{\alpha}} - \cfrac{\sqrt{3}}{2}U_{\mathrm{\beta}}
+        = \cfrac{1}{\sqrt{3}}(-A_1-2A_0)
+    \end{cases}
+\end{equation*}
+
+在第I扇区，由扇区判断条件易知\(U_{\mathrm{a}}>U_{\mathrm{b}}>U_{\mathrm{c}}\)，
+即\(U_{\mathrm{\max}}=U_{\mathrm{a}}\)，\(U_{\mathrm{\min}}=U_{\mathrm{c}}\)。
+将上式代入零序分量公式
+\eqref{eq:零序分量表达式}可得：
+\begin{equation*}
+    U_{\mathrm{0}} = -\cfrac{U_{\mathrm{a}} + U_{\mathrm{c}}}{2} = \cfrac{1}{2\sqrt{3}}(A_0-A_1)
+\end{equation*}
+
+将原始相电压与零序分量叠加，得到计算法在第I扇区的调制相电压：
+\begin{equation*}
+    \begin{cases}
+        U_{\mathrm{a,C}}'=U_{\mathrm{a}}+U_{\mathrm{0}}
+        =\cfrac{1}{2\sqrt{3}}(3A_1+3A_0)=\cfrac{\sqrt{3}}{2}(A_0 + A_1)=U_{\mathrm{a,M}}'\\
+        U_{\mathrm{b,C}}'=U_{\mathrm{b}}+U_{\mathrm{0}}
+        =\cfrac{1}{2\sqrt{3}}(3A_0-3A_1)=\cfrac{\sqrt{3}}{2}(A_0 - A_1)=U_{\mathrm{b,M}}'\\
+        U_{\mathrm{c,C}}'=U_{\mathrm{c}}+U_{\mathrm{0}} 
+        =\cfrac{1}{2\sqrt{3}}(-3A_1-3A_0)=\cfrac{\sqrt{3}}{2}(-A_0 - A_1)=U_{\mathrm{c,M}}'\\
+    \end{cases}
+\end{equation*}
+
+可以发现调制法和计算法结果一致。其余五个扇区证明同理。通过SVPWM计算法，大大省略了调制法需要的查表运算，无需
 程序分支，只需要按照公式\eqref{eq:零序分量表达式}
-和\eqref{eq:SVPWM占空比表达式}计算即可。
+和\eqref{eq:三相占空比表达式}计算即可，更加适合实时控制场合。
