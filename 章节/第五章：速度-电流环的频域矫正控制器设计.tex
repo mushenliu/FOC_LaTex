@@ -5,18 +5,18 @@
 \subsubsection{D轴频域矫正控制器设计与闭环验证}
 D轴电流环的传递函数为：
 \begin{align*}
-    G_D(z)&=(1-z^{-1})\mathcal{Z}[\cfrac{e^{-66.93\times10^{-6}s}}
+    G_{\mathrm{D}}(z)&=(1-z^{-1})\mathcal{Z}[\cfrac{e^{-66.93\times10^{-6}s}}
         {s(5.70125+1.86152\times 10^{-3}s)(120\times 10^{-9}s+1)}]\\
         &=z^{-2}\cfrac{0.03222 + 0.0001666 z^{-1} + 4.22\times 10^{-21}z^{-2}}{1- 0.8154 z^{-1}}
 \end{align*}
 
-对于电流环控制，为了实现无差跟踪，需要加入积分环节\(\cfrac{1}{s}\)，使用双线性变换可得在电流环采样周期\(T_s=66.67\)
+对于电流环控制，为了实现无差跟踪，需要加入积分环节\(\cfrac{1}{s}\)，使用双线性变换可得在电流环采样周期\(T_{\mathrm{s}}=66.67\)
 us下的离散化形式为：
 \begin{equation*}
-    I(z)=\cfrac{T_s}{2}\times\cfrac{1+z^{-1}}{1-z^{-1}}=3.332\times 10^{-5}\times\cfrac{1+z^{-1}}{1-z^{-1}}
+    I(z)=\cfrac{T_{\mathrm{s}}}{2}\times\cfrac{1+z^{-1}}{1-z^{-1}}=3.332\times 10^{-5}\times\cfrac{1+z^{-1}}{1-z^{-1}}
 \end{equation*}
 
-可以构造带积分环节的等价被控对象\(I(z)G_D(z)\)，其开环频率特性如下图所示。
+可以构造带积分环节的等价被控对象\(I(z)G_{\mathrm{D}}(z)\)，其开环频率特性如下图所示。
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]
@@ -24,7 +24,7 @@ us下的离散化形式为：
     \caption{带积分环节的D轴等价被控对象开环频率特性}
 \end{figure}
 
-采用一阶超前校正控制\(C_D(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，开环截止频率设定为1000Hz，以不低于40°的相位裕度为目标，
+采用一阶超前校正控制\(C_{\mathrm{D}}(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，开环截止频率设定为1000Hz，以不低于40°的相位裕度为目标，
 在1000Hz处提供最多60°的相位补偿，可以计算得到：
 \begin{equation*}
     \begin{cases}
@@ -35,7 +35,7 @@ us下的离散化形式为：
 
 最后根据等价被控对象在1000Hz处的增益，调整放大系数K，最终可得带积分的D轴超前控制器：
 \begin{equation*}
-    C_D(s)=\cfrac{12.95s+2.18\times 10^4}{4.265\times 10^{-5}s^2+s}
+    C_{\mathrm{D}}(s)=\cfrac{12.95s+2.18\times 10^4}{4.265\times 10^{-5}s^2+s}
 \end{equation*}
 
 使用双线性变换离散化后得到\footnote{对于采用双线性变换离散化的控制器，积分环节对应为z=1的极点。因此要求离散后分母各个系数之和
@@ -43,7 +43,7 @@ us下的离散化形式为：
 饱和）会导致系统行为失常。MATLAB默认显示四位有效数字，可能会导致精度损失，此时需要手动点开传递函数数据结构查看
 更精确的值}：
 \begin{equation*}
-    C_D(z)=\cfrac{5.998+0.6373z^{-1}-5.361z^{-2}}{1-1.1227z^{-1}+0.1227z^{-2}}
+    C_{\mathrm{D}}(z)=\cfrac{5.998+0.6373z^{-1}-5.361z^{-2}}{1-1.1227z^{-1}+0.1227z^{-2}}
 \end{equation*}
 
 经过超前控制后的开环频率特性和闭环频率特性如下图所示。
@@ -63,7 +63,7 @@ us下的离散化形式为：
     \caption{D轴开-闭环单位阶跃响应对比}
 \end{figure}
 
-可以发现，通过带积分环节的超前校正控制器，使得能够无差跟踪给定信号，超调量21.3\(\%\)，调节时间为1.6ms，用一定的超调
+可以发现，通过带积分环节的超前校正控制器，使得能够无差跟踪给定信号，超调量21.3\%，调节时间为1.6ms，用一定的超调
 换来了极快的响应速度。接下来考虑以±0.25A的方波电流给定信号（持续50个采样周期）进行测试，以评估实际系统响应和
 建模准确性，结果如下图所示。
 \begin{figure}[H]
@@ -83,19 +83,19 @@ us下的离散化形式为：
 
 据上图可知，由于存在采样噪声且进行闭环控制后系统对采样噪声的敏感度升高，导致实测电流波形有较大的波动。但在
 整体趋势上和仿真波形一致。
-正向方波中相关系数为99.88301\(\%\)，拟合优度95.15871\(\%\)；
-负向方波中相关系数为99.73266\(\%\)，拟合优度92.69211\(\%\)，均为较高水平。
+正向方波中相关系数为99.88301\%，拟合优度95.15871\%；
+负向方波中相关系数为99.73266\%，拟合优度92.69211\%，均为较高水平。
 
 \subsubsection{Q轴频域矫正控制器设计与闭环验证}
 Q轴电流环的传递函数为：
 \begin{align*}
-    G_Q(z)&=(1-z^{-1})\mathcal{Z}[\cfrac{e^{-66.93\times10^{-6}s}}
+    G_{\mathrm{Q}}(z)&=(1-z^{-1})\mathcal{Z}[\cfrac{e^{-66.93\times10^{-6}s}}
         {s(5.70125+2.16828\times 10^{-3}s)(120\times 10^{-9}s+1)}]\\
         &=z^{-2}\cfrac{0.02805 + 0.0001482 z^{-1}+5.776\times 10^{-21}z^{-2}}{1- 0.8393 z^{-1}}
 \end{align*}
 
 与D轴同理，在电流环中串联积分环节\(I(z)\)以消除稳态误差，构造带积分环节的等价被控对象
-\(I(z)G_Q(z)\)，其开环频率特性如下图所示。
+\(I(z)G_{\mathrm{Q}}(z)\)，其开环频率特性如下图所示。
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]
@@ -103,19 +103,19 @@ Q轴电流环的传递函数为：
     \caption{带积分环节的Q轴等价被控对象开环频率特性}
 \end{figure}
 
-采用与D轴相同的一阶超前校正结构\(C_Q(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，设计指标保持一致：
+采用与D轴相同的一阶超前校正结构\(C_{\mathrm{Q}}(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，设计指标保持一致：
 开环截止频率1000Hz，相位裕度不低于40°，在1000Hz处提供最多60°的相位补偿。\(\alpha\)和\(T\)
 的取值与D轴完全相同（\(\alpha=0.0718\)，\(T=5.9391\times 10^{-4}\)），仅需根据Q轴等价被控对象
-在1000Hz处的增益调整放大系数\(K\)。由于Q轴电感大于D轴（\(L_q=2.16828\textrm{mH}>L_d=1.86152\textrm{mH}\)），
+在1000Hz处的增益调整放大系数\(K\)。由于Q轴电感大于D轴（\(L_{\mathrm{q}}=2.16828\textrm{mH}>L_{\mathrm{d}}=1.86152\textrm{mH}\)），
 Q轴RL电路的转折频率更低，1000Hz处的增益衰减更大，因此需要略高的\(K\)值补偿。最终可得带积分的
 Q轴超前控制器：
 \begin{equation*}
-    C_Q(s)=\cfrac{14.7s+2.474\times 10^4}{4.265\times 10^{-5}s^2+s}
+    C_{\mathrm{Q}}(s)=\cfrac{14.7s+2.474\times 10^4}{4.265\times 10^{-5}s^2+s}
 \end{equation*}
 
 使用双线性变换离散化后得到：
 \begin{equation*}
-    C_Q(z)=\cfrac{6.808+0.7233z^{-1}-6.085z^{-2}}{1-1.1227z^{-1}+0.1227z^{-2}}
+    C_{\mathrm{Q}}(z)=\cfrac{6.808+0.7233z^{-1}-6.085z^{-2}}{1-1.1227z^{-1}+0.1227z^{-2}}
 \end{equation*}
 
 经过超前控制后的开环频率特性和闭环频率特性如下图所示。
@@ -136,13 +136,13 @@ Q轴超前控制器：
     \caption{Q轴开-闭环单位阶跃响应对比}
 \end{figure}
 
-可以发现，Q轴闭环阶跃响应的超调量25.8\(\%\)，调节时间1.6ms，与D轴基本一致，这是因为
+可以发现，Q轴闭环阶跃响应的超调量25.8\%，调节时间1.6ms，与D轴基本一致，这是因为
 两者采用了相同的频域设计指标和校正器结构。
 
 接下来以±0.25A的方波电流给定信号进行闭环跟踪测试。与D轴方波持续50个采样周期不同，
 Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁转矩而转动，方波持续时间过长将导致
-转速累积升高，反电动势\(\omega_e(\psi_m+L_di_d)\)随之增大，削弱等效Q轴电压\(U_q'\)中的激励分量，
-迫使控制器持续增大\(U_q\)以维持跟踪，最终进入饱和区，使系统非线性显著增强而难以进行线性仿真分析。
+转速累积升高，反电动势\(\omega_{\mathrm{e}}(\psi_{\mathrm{m}}+L_{\mathrm{d}}i_{\mathrm{d}})\)随之增大，削弱等效Q轴电压\(U_{\mathrm{q}}'\)中的激励分量，
+迫使控制器持续增大\(U_{\mathrm{q}}\)以维持跟踪，最终进入饱和区，使系统非线性显著增强而难以进行线性仿真分析。
 缩短方波持续时间可限制电机转角与转速的累积，将反电动势对等效RL电路模型的干扰控制在可忽略范围内。}。
 闭环验证结果如下图所示。
 \begin{figure}[H]
@@ -163,33 +163,33 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
 由于Q轴方波持续时间极短（5个采样周期仅约0.33ms），远小于闭环调节时间（1.6ms），
 电流在每个脉冲内尚未到达稳态即被翻转，因此该测试实质上是暂态跟踪能力的验证，
 而非稳态方波跟踪。实测曲线与仿真曲线的趋势吻合良好，
-正向方波中相关系数为99.71872\(\%\)，拟合优度90.50733\(\%\)；
-负向方波中相关系数为99.42643\(\%\)，拟合优度85.36039\(\%\)，
+正向方波中相关系数为99.71872\%，拟合优度90.50733\%；
+负向方波中相关系数为99.42643\%，拟合优度85.36039\%，
 验证了Q轴频域校正控制器的瞬态响应有效性。
 
 \subsection{速度环辨识理论分析}
-虽然前文已经完成了Q轴电流环的闭环校正，但在速度环辨识中并未直接以电流给定\(i_q^*\)作为激励
-输入。其原因是Q轴电流控制器\(C_Q(z)\)中含有积分环节——若以\(i_q^*\)
-\footnote{用上标*表示对某个物理量的给定/期望（如\(i_d^*,i_q^*,n^*\)），无上标*的表示实际值
-（如\(i_d,i_q,n\)）。}
-替代\(U_q\)作为输入，辨识过程中积分器将持续累积\(i_q^*\)与实际\(i_q\)之间的跟踪误差并迅速
-进入饱和区，使系统非线性显著增强，违背线性辨识的基本假设。因此，速度环的辨识仍以\(U_q\)作为可操作变量。
+虽然前文已经完成了Q轴电流环的闭环校正，但在速度环辨识中并未直接以电流给定\(i_{\mathrm{q}}^*\)作为激励
+输入。其原因是Q轴电流控制器\(C_{\mathrm{Q}}(z)\)中含有积分环节——若以\(i_{\mathrm{q}}^*\)
+\footnote{用上标*表示对某个物理量的给定/期望（如\(i_{\mathrm{d}}^*,i_{\mathrm{q}}^*,n^*\)），无上标*的表示实际值
+（如\(i_{\mathrm{d}},i_{\mathrm{q}},n\)）。}
+替代\(U_{\mathrm{q}}\)作为输入，辨识过程中积分器将持续累积\(i_{\mathrm{q}}^*\)与实际\(i_{\mathrm{q}}\)之间的跟踪误差并迅速
+进入饱和区，使系统非线性显著增强，违背线性辨识的基本假设。因此，速度环的辨识仍以\(U_{\mathrm{q}}\)作为可操作变量。
 
 在空载情况下，电机的机械部分一般被建模为带有与速度成正比的粘滞摩擦环节，即从电磁转矩到转速的传递函数为：
 \begin{equation*}
-    G_m(s)=\cfrac{n(s)}{T_e(s)}=\cfrac{1}{B+Js}
+    G_{\mathrm{m}}(s)=\cfrac{n(s)}{T_{\mathrm{e}}(s)}=\cfrac{1}{B+Js}
 \end{equation*}
 
 但是由于电机的机械部分非线性因素远超电气部分，上述假设在实际中往往无法成立分析。因此在这里将机械部分视为一个
-阶次不定的系统，在特定工作点附近的局部线性化传递函数为\(G_m(s)\)
+阶次不定的系统，在特定工作点附近的局部线性化传递函数为\(G_{\mathrm{m}}(s)\)
 
-在\(i_d^*=0\)的条件下，\(U_d\)用于维持理想化的\(i_d=0\)条件，而\(U_q\)用于控制\(i_q\)，实现转矩环和速度环控制。
-此时电磁转矩为\(T_e=\cfrac{3}{2}p\psi_mi_q\propto i_q\)为增益环节。而Q轴反电动势为
-\(E=\omega_e(\psi_m+L_di_d)\)，在\(i_d=0\)时可以简化为\(E=\omega_e\psi_m\propto \omega_e\)也是线性环节。
-考虑电角速度\(\omega_e\)与转速\(n\)满足\(\omega_e=\cfrac{\pi}{30}np\)，因此反电动势可以表示为
-\(E=\cfrac{\pi}{30}np\psi_m\propto n\)。
+在\(i_{\mathrm{d}}^*=0\)的条件下，\(U_{\mathrm{d}}\)用于维持理想化的\(i_{\mathrm{d}}=0\)条件，而\(U_{\mathrm{q}}\)用于控制\(i_{\mathrm{q}}\)，实现转矩环和速度环控制。
+此时电磁转矩为\(T_{\mathrm{e}}=\cfrac{3}{2}p\psi_{\mathrm{m}}i_{\mathrm{q}}\propto i_{\mathrm{q}}\)为增益环节。而Q轴反电动势为
+\(E=\omega_{\mathrm{e}}(\psi_{\mathrm{m}}+L_{\mathrm{d}}i_{\mathrm{d}})\)，在\(i_{\mathrm{d}}=0\)时可以简化为\(E=\omega_{\mathrm{e}}\psi_{\mathrm{m}}\propto \omega_{\mathrm{e}}\)也是线性环节。
+考虑电角速度\(\omega_{\mathrm{e}}\)与转速\(n\)满足\(\omega_{\mathrm{e}}=\cfrac{\pi}{30}np\)，因此反电动势可以表示为
+\(E=\cfrac{\pi}{30}np\psi_{\mathrm{m}}\propto n\)。
 
-因此可以得到从\(U_q\)到\(n\)在\(i_d=0\)的理想化假设下系统框图：
+因此可以得到从\(U_{\mathrm{q}}\)到\(n\)在\(i_{\mathrm{d}}=0\)的理想化假设下系统框图：
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[auto, node distance=3cm, >=latex']
@@ -203,41 +203,41 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
         % 放置节点
         \node [input, name=input] {};
         \node [sum, right of=input] (sum) {};
-        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_s+L_q s}\)};
-        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_m\)};
-        \node [block, right of=K] (Mech) {\(G_m(s)\)};
+        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}} s}\)};
+        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_{\mathrm{m}}\)};
+        \node [block, right of=K] (Mech) {\(G_{\mathrm{m}}(s)\)};
         \node [output, right of=Mech] (output) {};
-        \node [block, below of=K, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
+        \node [block, below of=K, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_{\mathrm{m}}\)};
 
-        \draw [->] (input) -- node {\(U_q\)} (sum);
-        \draw [->] (sum) -- node {\(U_q'\)} (RL);
-        \draw [->] (RL) -- node {\(i_q\)} (K);
-        \draw [->] (K) -- node {\(T_e\)} (Mech);
+        \draw [->] (input) -- node {\(U_{\mathrm{q}}\)} (sum);
+        \draw [->] (sum) -- node {\(U_{\mathrm{q}}'\)} (RL);
+        \draw [->] (RL) -- node {\(i_{\mathrm{q}}\)} (K);
+        \draw [->] (K) -- node {\(T_{\mathrm{e}}\)} (Mech);
         \draw [->] (Mech) -- node [name=y] {\(n\)} (output);
         \draw [->] (y) |- (Kf);
-        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.5] {\(E\)} (sum);
+        \draw [->] (Kf) -| node[pos=0.9] {\(-\)} node [pos=0.5] {\(E\)} (sum);
     \end{tikzpicture}
-    \caption{\(i_d=0\)假设下的Q轴电流-速度系统框图}
+    \caption{\(i_{\mathrm{d}}=0\)假设下的Q轴电流-速度系统框图}
     \label{fig:Q轴电流-速度系统框图}
 \end{figure}
 
-根据上图可知，在\(i_d=0\)的理想化假设下，Q轴电流和转速环由于反电动势构成了物理特性导致的闭环，使得被迫在闭环情况下
-进行辨识，这会对系统辨识产生很大的影响。相关推导见\ref{sec:基于相关分析的Ho-Kalman辨识有偏-无偏性分析}。根据
-\eqref{eq:闭环有偏性公式}可知，在闭环情况下估计的脉冲响应序列对应的DTFT满足：
+根据上图可知，在\(i_{\mathrm{d}}=0\)的理想化假设下，Q轴电流和转速环由于反电动势构成了物理特性导致的闭环，使得被迫在闭环情况下
+进行辨识，这会对系统辨识产生很大的影响。相关推导见\ref{sec:基于相关分析的Ho-Kalman辨识偏倚性分析}。根据
+\eqref{eq:闭环有偏性公式}可知，在闭环情况下估计的脉冲响应序列对应的离散时间序列傅里叶变换DTFT满足：
 \begin{equation*}
-    \hat{G}(e^{j\omega})=G(e^{j\omega})[1-\cfrac{\sigma_x^2}{S_{xx}(e^{j\omega})}]
+    \hat{G}(e^{\mathrm{j}\omega})=G(e^{\mathrm{j}\omega})[1-\cfrac{\sigma_{x}^2}{S_{xx}(e^{\mathrm{j}\omega})}]
     \tag{\ref{eq:闭环有偏性公式}}
 \end{equation*}
 
-然而，真实的\(G(e^{j\omega})\)未知，偏差因子\(\cfrac{\sigma_x^2}{S_{xx}(e^{j\omega})}\)也无法从辨识数据中直接计算。
+然而，真实的\(G(e^{\mathrm{j}\omega})\)未知，偏差因子\(\cfrac{\sigma_{x}^2}{S_{xx}(e^{\mathrm{j}\omega})}\)也无法从辨识数据中直接计算。
 因此需要引入相干函数来从数据中评估基于维纳-霍普夫方程估计脉冲响应序列的估计质量。
 
 相干函数定义为：
 \begin{equation}
-    \gamma_{xy}^2(\omega)=\frac{|S_{xy}(e^{j\omega})|^2}{S_{xx}(e^{j\omega})\,S_{yy}(e^{j\omega})}
+    \gamma_{xy}^2(\omega)=\frac{|S_{xy}(e^{\mathrm{j}\omega})|^2}{S_{xx}(e^{\mathrm{j}\omega})\,S_{yy}(e^{\mathrm{j}\omega})}
 \end{equation}
 
-其中\(S_{xy}(e^{j\omega})\)为互功率谱密度，\(S_{xx}(e^{j\omega})\)和\(S_{yy}(e^{j\omega})\)为自功率谱密度。
+其中\(S_{xy}(e^{\mathrm{j}\omega})\)为互功率谱密度，\(S_{xx}(e^{\mathrm{j}\omega})\)和\(S_{yy}(e^{\mathrm{j}\omega})\)为自功率谱密度。
 相干函数满足\(0\le \gamma_{xy}^2(\omega)\le 1\)。并且相干函数在某个频点的值越接近1，说明输出信号中该频点的分量
 可以被输入信号线性解释
 \footnote{即可以用一个动态的线性时不变系统（LTI）系统来拟合从输入信号到输出信号的关系。}
@@ -246,16 +246,16 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
 相干函数除了用于评估有偏程度外，也能用于信噪比的分析。为对比不同辨识策略在反电动势
 造成的闭环结构下的表现，考虑以下四种情况，并分别计算相干函数：
 \begin{itemize}
-    \item 开环辨识基准（D轴同步电感\(L_d\)辨识）：D轴电路方程为
-\(u_d=R_si_d+L_d\cfrac{di_d}{dt}\)，在\(i_q=0\)条件下无电磁转矩、
-无转动、无反电动势，交叉耦合项\(\omega_eL_qi_q=0\)，D轴RL电路为纯开环结构，
+    \item 开环辨识基准（D轴同步电感\(L_{\mathrm{d}}\)辨识）：D轴电路方程为
+\(u_{\mathrm{d}}=R_{\mathrm{s}}i_{\mathrm{d}}+L_{\mathrm{d}}\cfrac{\dd i_{\mathrm{d}}}{\dd t}\)，在\(i_{\mathrm{q}}=0\)条件下无电磁转矩、
+无转动、无反电动势，交叉耦合项\(\omega_{\mathrm{e}}L_{\mathrm{q}}i_{\mathrm{q}}=0\)，D轴RL电路为纯开环结构，
 辨识结果理论上无偏，可作为相干函数的理想参考基准。
-    \item 重构等效输入法（Q轴同步电感\(L_q\)辨识）：通过计算等效输入电压
-\(U_q'=U_q-\omega_e(L_di_d+\psi_m)\)辨识从\(U_q'\)到\(i_q\)的传递函数。
-    \item 直接法：以测量的\(i_q\)为输入、转速\(n\)为输出，直接辨识从\(i_q\)到\(n\)的
+    \item 重构等效输入法（Q轴同步电感\(L_{\mathrm{q}}\)辨识）：通过计算等效输入电压
+\(U_{\mathrm{q}}'=U_{\mathrm{q}}-\omega_{\mathrm{e}}(L_{\mathrm{d}}i_{\mathrm{d}}+\psi_{\mathrm{m}})\)辨识从\(U_{\mathrm{q}}'\)到\(i_{\mathrm{q}}\)的传递函数。
+    \item 直接法：以测量的\(i_{\mathrm{q}}\)为输入、转速\(n\)为输出，直接辨识从\(i_{\mathrm{q}}\)到\(n\)的
 传递函数。
-    \item 间接法闭环辨识：先辨识从\(U_q\)到\(n\)的闭环传递函数，再根据已确定的Q轴
-电流传递函数反推机械部分的传递函数\(G_m(s)\)。
+    \item 间接法闭环辨识：先辨识从\(U_{\mathrm{q}}\)到\(n\)的闭环传递函数，再根据已确定的Q轴
+电流传递函数反推机械部分的传递函数\(G_{\mathrm{m}}(s)\)。
 \end{itemize}
 
 将相干函数满足\(\gamma^2_{\text{dB}} > -0.5\text{dB}\)（即\(\gamma^2 \ge 0.89\)）视为估计
@@ -287,7 +287,7 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 以上，说明即使理论有偏，工程上该偏差可以近似忽略。
 
 接下来分析直接法与间接法在反电动势闭环结构下的表现，工作点取
-\(U_q = \pm 2\,\text{V}, \pm 4\,\text{V}\)
+\(U_{\mathrm{q}} = \pm 2\,\text{V}, \pm 4\,\text{V}\)
 \footnote{相较于电路模态辨识少了0V工作点。0V附近静摩擦、转矩死区等
 非线性因素主导，辨识结果与其他工作点截然不同，因此不纳入考虑。}
 仍将\(\gamma^2_{\text{dB}} > -0.5\,\text{dB}\)视为工程可靠区间。机械动态远慢于电气动态，
@@ -331,35 +331,35 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 在于机械部分的非线性因素（静摩擦、转矩死区、机械系统阶次不定等）无论从数量
 还是强度均远超电路部分。
 \footnote{另一种理解两者差异的角度是奇异摄动。电机的电路部分和机械部分时间常数尺度差异大，
-（电路时间常数\(\cfrac{L_q}{R_s}\approx 0.3\text{ms}\)，而根据后续机械部分传递函数的主导极点
+（电路时间常数\(\cfrac{L_{\mathrm{q}}}{R_{\mathrm{s}}}\approx 0.3\text{ms}\)，而根据后续机械部分传递函数的主导极点
 可知主导时间常数约\(\cfrac{1}{30}\text{s}=33.33\text{ms}\)，分离比\(\cfrac{0.3}{33.33}\approx 0.009\ll 1\)）
 构成天然奇异摄动系统。辨识快模态（电路部分）时，慢模态（转速）在电气激励时间尺度上近似不变，
 反电动势近似为常数，反馈回路基本没有激活。辨识慢模态（机械部分）时，
 转速随激励同步变化，反电动势反馈回路在机械时间尺度上被完全激活，辨识结果可靠性显著降低。}
 而直接法在闭环情况下还存在数学可证明的严格有偏，因此相干函数值更低。
 综上，对机械传递函数的辨识应优先采用间接法：先辨识
-\(U_q\to n\)的闭环传递函数，再从已确定的Q轴电路传递函数中代数反推
-\(G_m(s)\)。
+\(U_{\mathrm{q}}\to n\)的闭环传递函数，再从已确定的Q轴电路传递函数中代数反推
+\(G_{\mathrm{m}}(s)\)。
 
 \subsection{速度环被控对象辨识与开环验证}
-\subsubsection{\(i_d=0\)理想化假设分析}
-前文建立了基于\(i_d^*=0\)假设的间接法辨识框架：将\(U_q\)到\(n\)的通道建模为
-反电动势闭环结构，其核心在于认为\(i_d\approx 0\)在辨识过程中始终成立，从而使反电动势
-\(E=\omega_e(\psi_m+L_di_d)\)简化为\(\omega_e\psi_m\)、电磁转矩
-\(T_e=\cfrac{3}{2}p[\psi_mi_q+(L_d-L_q)i_di_q]\)简化为\(\cfrac{3}{2}p\psi_mi_q\)。
-然而实际辨识过程中，$i_d^*=0$仅代表控制器的给定目标，由于D轴电流环有限带宽、采样噪声及
-交叉耦合$\omega_eL_qi_q$的扰动，实测$i_d$不可避免存在微小偏差。若该偏差导致反电动势
+\subsubsection{\(i_{\mathrm{d}}=0\)理想化假设分析}
+前文建立了基于\(i_{\mathrm{d}}^*=0\)假设的间接法辨识框架：将\(U_{\mathrm{q}}\)到\(n\)的通道建模为
+反电动势闭环结构，其核心在于认为\(i_{\mathrm{d}}\approx 0\)在辨识过程中始终成立，从而使反电动势
+\(E=\omega_{\mathrm{e}}(\psi_{\mathrm{m}}+L_{\mathrm{d}}i_{\mathrm{d}})\)简化为\(\omega_{\mathrm{e}}\psi_{\mathrm{m}}\)、电磁转矩
+\(T_{\mathrm{e}}=\cfrac{3}{2}p[\psi_{\mathrm{m}}i_{\mathrm{q}}+(L_{\mathrm{d}}-L_{\mathrm{q}})i_{\mathrm{d}}i_{\mathrm{q}}]\)简化为\(\cfrac{3}{2}p\psi_{\mathrm{m}}i_{\mathrm{q}}\)。
+然而实际辨识过程中，\(i_{\mathrm{d}}^*=0\)仅代表控制器的给定目标，由于D轴电流环有限带宽、采样噪声及
+交叉耦合\(\omega_{\mathrm{e}}L_{\mathrm{q}}i_{\mathrm{q}}\)的扰动，实测\(i_{\mathrm{d}}\)不可避免存在微小偏差。若该偏差导致反电动势
 或电磁转矩的简化值与实际值差异显著，则间接法的建模基础将不再成立。因此，有必要在用辨识
-结果反推$G_m(s)$之前，先验证$i_d=0$假设在实验数据中的工程成立性。
+结果反推\(G_{\mathrm{m}}(s)\)之前，先验证\(i_{\mathrm{d}}=0\)假设在实验数据中的工程成立性。
 
-以\(U_q=2\text{V}\)为代表性工作点，在M序列激励的全时段内，利用实测的\(i_d(t)\)，
-\(i_q(t)\)和\(n(t)\)数据，分别计算反电动势与电磁转矩在两种情形下的取值并进行对比：
+以\(U_{\mathrm{q}}=2\text{V}\)为代表性工作点，在M序列激励的全时段内，利用实测的\(i_{\mathrm{d}}(t)\)，
+\(i_{\mathrm{q}}(t)\)和\(n(t)\)数据，分别计算反电动势与电磁转矩在两种情形下的取值并进行对比：
 \begin{itemize}
-    \item $i_d=0$理想假设：计算\(E_0=\omega_e\psi_m=\cfrac{\pi}{30}n(t)p\psi_m\)和
-    \(T_{e0}=\cfrac{3}{2}p\psi_mi_q(t)\)。
-    \item 实测\(i_d\)代入：计算\(E_{\text{meas}}=\cfrac{\pi}{30}n(t)p[\psi_m+L_di_d(t)]\)和
-    \(T_{e,\text{meas}}=\cfrac{3}{2}p[\psi_mi_q(t)+(L_d-L_q)i_d(t)i_q(t)]\)，其中
-    \(p=14\)，\(\psi_m\)，\(L_d\)，\(L_q\)取自第四章辨识结果。
+    \item \(i_{\mathrm{d}}=0\)理想假设：计算\(E_{\mathrm{0}}=\omega_{\mathrm{e}}\psi_{\mathrm{m}}=\cfrac{\pi}{30}n(t)p\psi_{\mathrm{m}}\)和
+    \(T_{\mathrm{e0}}=\cfrac{3}{2}p\psi_{\mathrm{m}}i_{\mathrm{q}}(t)\)。
+    \item 实测\(i_{\mathrm{d}}\)代入：计算\(E_{\text{meas}}=\cfrac{\pi}{30}n(t)p[\psi_{\mathrm{m}}+L_{\mathrm{d}}i_{\mathrm{d}}(t)]\)和
+    \(T_{e,\text{meas}}=\cfrac{3}{2}p[\psi_{\mathrm{m}}i_{\mathrm{q}}(t)+(L_{\mathrm{d}}-L_{\mathrm{q}})i_{\mathrm{d}}(t)i_{\mathrm{q}}(t)]\)，其中
+    \(p=14\)，\(\psi_{\mathrm{m}}\)，\(L_{\mathrm{d}}\)，\(L_{\mathrm{q}}\)取自第四章辨识结果。
 \end{itemize}
 对比结果如下图所示。
 \begin{figure}[H]
@@ -379,8 +379,8 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 \end{figure}
 
 据上图可知，两者在反电动势和电磁转矩两条曲线上的差异均微乎其微，波形在时域上几乎完全重合。
-为覆盖不同工作点下的情况，在\(U_q=\pm2\text{V},\pm4\text{V}\)四个工作点均进行上述分析，
-计算反电动势和电磁转矩在理想\(i_d=0\)与实际\(i_d\)下的相关系数与拟合优度，汇总如下表所示。
+为覆盖不同工作点下的情况，在\(U_{\mathrm{q}}=\pm2\text{V},\pm4\text{V}\)四个工作点均进行上述分析，
+计算反电动势和电磁转矩在理想\(i_{\mathrm{d}}=0\)与实际\(i_{\mathrm{d}}\)下的相关系数与拟合优度，汇总如下表所示。
 \begin{table}[H]
     \centering
     \begin{tabular}{|c|c|c|c|c|}
@@ -389,28 +389,28 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
         \cline{2-5}
         & 相关系数 & 拟合优度 & 相关系数 & 拟合优度\\
         \hline
-        \(U_q=2\text{V}\) & 99.99991\% & 99.86604\% & 100.00000\% & 99.97521\%\\
+        \(U_{\mathrm{q}}=2\text{V}\) & 99.99991\% & 99.86604\% & 100.00000\% & 99.97521\%\\
         \hline
-        \(U_q=4\text{V}\) & 99.99987\% & 99.83449\% & 100.00000\% & 99.96860\%\\
+        \(U_{\mathrm{q}}=4\text{V}\) & 99.99987\% & 99.83449\% & 100.00000\% & 99.96860\%\\
         \hline
-        \(U_q=-2\text{V}\) & 99.99992\% & 99.86799\% & 100.00000\% & 99.97689\%\\
+        \(U_{\mathrm{q}}=-2\text{V}\) & 99.99992\% & 99.86799\% & 100.00000\% & 99.97689\%\\
         \hline
-        \(U_q=-4\text{V}\) & 99.99985\% & 99.81871\% & 100.00000\% & 99.96570\%\\
+        \(U_{\mathrm{q}}=-4\text{V}\) & 99.99985\% & 99.81871\% & 100.00000\% & 99.96570\%\\
         \hline
     \end{tabular}
-    \caption{各工作点下\(i_d=0\)理想假设与实测\(i_d\)的差异评估}
+    \caption{各工作点下\(i_{\mathrm{d}}=0\)理想假设与实测\(i_{\mathrm{d}}\)的差异评估}
     \label{tab:各工作点id=0假设验证汇总}
 \end{table}
 
 由表\ref{tab:各工作点id=0假设验证汇总}可知，四个工作点下的反电动势与电磁转矩的相关系数和
-拟合优度均超过99.5\%，\(i_d=0\)的简化假设在所有工作点下均完全成立。据此，可以确信后续基于
-\(i_d=0\)理想模型进行的间接法辨识及机械传递函数反推具备充分的工程合理性。
+拟合优度均超过99.5\%，\(i_{\mathrm{d}}=0\)的简化假设在所有工作点下均完全成立。据此，可以确信后续基于
+\(i_{\mathrm{d}}=0\)理想模型进行的间接法辨识及机械传递函数反推具备充分的工程合理性。
 
 \subsubsection{不同工作点的机械部分传递函数辨识}
-满足了\(i_d=0\)的理想化近似条件后，才能真正开始基于间接法的机械传递函数辨识。
-在\(U_q=2V\)工作点附近给予伪随机激励，幅值2V，辨识从\(U_q\)到\(n\)的传递函数，奇异值分解如下图所示和
-数值解-解析解频域对比如下图所示。幅频相关系数99.08708\(\%\)，相频相关系数99.91204\(\%\)，复频率
-拟合优度88.14769\(\%\)。根据奇异值分解图可得闭环传递函数应为2阶。辨识得到离散传递函数为：
+满足了\(i_{\mathrm{d}}=0\)的理想化近似条件后，才能真正开始基于间接法的机械传递函数辨识。
+在\(U_{\mathrm{q}}=2V\)工作点附近给予伪随机激励，幅值2V，辨识从\(U_{\mathrm{q}}\)到\(n\)的传递函数，奇异值分解如下图所示和
+数值解-解析解频域对比如下图所示。幅频相关系数99.08708\%，相频相关系数99.91204\%，复频率
+拟合优度88.14769\%。根据奇异值分解图可得闭环传递函数应为2阶。辨识得到离散传递函数为：
 \footnote{由于伪随机信号对直流增益几乎没有辨识能力，因此选取阶跃段的稳态值，除以激励值作为直流增益，
 修正辨识结果。}
 \(G(z)=\cfrac{195+1111z^{-1}}{60.17-51.9z^{-1}+12.32z^{-2}}\)。
@@ -433,27 +433,27 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 \(G(s)=\cfrac{-2.34\times 10^{4}s+4.578\times 10^7}{s^2+1586s+7.234\times 10^5}\)。根据图\ref{fig:Q轴电流-速度系统框图}
 可知，闭环传递函数和机械部分的传递函数满足：
 \begin{equation}
-    G(s)=\cfrac{\cfrac{1}{R_s+L_qs}\times\cfrac{3}{2}p\psi_m\times G_m(s)}
-    {1+\cfrac{1}{R_s+L_qs}\times\cfrac{3}{2}p\psi_m\times G_m(s)\times \cfrac{\pi}{30}p\psi_m}
+    G(s)=\cfrac{\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}}s}\times\cfrac{3}{2}p\psi_{\mathrm{m}}\times G_{\mathrm{m}}(s)}
+    {1+\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}}s}\times\cfrac{3}{2}p\psi_{\mathrm{m}}\times G_{\mathrm{m}}(s)\times \cfrac{\pi}{30}p\psi_{\mathrm{m}}}
     \label{eq:Q轴电流-速度闭环传递函数表达式}
 \end{equation}
 
 推导可得：
 \begin{equation}
-    G_m(s)=\cfrac{(R+L_qs)G(s)}{\cfrac{3}{2}p\psi_m[1-\cfrac{\pi}{30}p\psi_mG(s)]}
+    G_{\mathrm{m}}(s)=\cfrac{(R+L_{\mathrm{q}}s)G(s)}{\cfrac{3}{2}p\psi_{\mathrm{m}}[1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(s)]}
     \label{eq:机械部分传递函数表达式}
 \end{equation}
 
 因此可得在2V工作点附近辨识得到的机械部分传递函数为
 \begin{equation*}
-    G_m(s)=\cfrac{-50.76 s^4 - 1.145\times 10^5 s^3 + 1.709\times 10^8 s^2 + 
+    G_{\mathrm{m}}(s)=\cfrac{-50.76 s^4 - 1.145\times 10^5 s^3 + 1.709\times 10^8 s^2 + 
     3.901\times 10^{11} s + 1.892\times 10^{14}}
     {0.2028 s^4 + 710.2 s^3 + 7.781\times 10^{5} s^2 + 3.05\times 10^{8} s + 1.087\times 10^{10}}
 \end{equation*}
 
 机械部分传递函数看似为四阶，实际上为二阶，这是因为传递函数代数运算精度不足没能完全对消。求解上述传递函数的零极点结果为：
-零点：[-2629.4、1959.4、-792.8±307.9j]；极点：[-1877.6、-792.8±307.9j、-39.5]。其中零点-792.8±307.9j和
-极点-792.8±307.9j可以对消
+零点：[-2629.4、1959.4、-792.8±j307.9]；极点：[-1877.6、-792.8±j307.9、-39.5]。其中零点-792.8±j307.9和
+极点-792.8±j307.9可以对消
 \footnote{MATLAB显示精度问题，使得两个零极点看起来完全一致，实际上略有不同才导致没能完全抵消。但零极点的差异在该
 数量级上可以忽略，视为对消}
 。因此最终只剩下两个零点[-2629.4、1959.4]和
@@ -480,7 +480,7 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
     \end{minipage}
 \end{figure}
 连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1943.5]和极点[-1945.1,-21]，直流增益[32510]
-（零极点-810.7±231.1j对消）。
+（零极点-810.7±j231.1对消）。
 
 工作点-2V的闭环传递函数辨识结果如下图所示，幅频相关系数98.97118\%，相频相关系数99.91117\%，复频率
 拟合优度87.59657\%。辨识得到离散传递函数为：\(G(z)=\cfrac{198.6+1126z^{-1}}{59.41-51.02z^{-1}+12.35z^{-2}}\)。
@@ -499,7 +499,7 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
     \end{minipage}
 \end{figure}
 连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1964.2]和极点[-1870.7,-37.9]，直流增益[18622]
-（零极点-785.3±343.5j对消）。
+（零极点-785.3±j343.5对消）。
 
 工作点-4V的闭环传递函数辨识结果如下图所示，幅频相关系数98.51759\%，相频相关系数99.76702\%，复频率
 拟合优度84.81924\%。辨识得到离散传递函数为：\(G(z)=\cfrac{205.5+1146z^{-1}}{60.76-52.04z^{-1}+11.91z^{-2}}\)。
@@ -518,7 +518,7 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
     \end{minipage}
 \end{figure}
 连续化、反推机械部分传递函数并消去零极点后得到零点[-2629.4,1956.0]和极点[-1948.7,-27.1]，直流增益[25478]
-（零极点-814.9±156.0j对消）。
+（零极点-814.9±j156.0对消）。
 
 将上述四个工作点的机械部分传递函数辨识结果汇总如下表所示。
 \begin{table}[H]
@@ -529,16 +529,16 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
         \cline{2-4}
         & 幅频相关系数 & 相频相关系数 & 拟合优度 & & & \\
         \hline
-        \(U_q=-4\text{V}\) & 98.51759\% & 99.76702\% & 84.81924\% & -1948.7, -27.1 & -2629.4, 1956.0 & 25478\\
+        \(U_{\mathrm{q}}=-4\text{V}\) & 98.51759\% & 99.76702\% & 84.81924\% & -1948.7, -27.1 & -2629.4, 1956.0 & 25478\\
         \hline
-        \(U_q=-2\text{V}\) & 98.97118\% & 99.91117\% & 87.59657\% & -1870.7, -37.9 & -2629.4, 1964.2 & 18622\\
+        \(U_{\mathrm{q}}=-2\text{V}\) & 98.97118\% & 99.91117\% & 87.59657\% & -1870.7, -37.9 & -2629.4, 1964.2 & 18622\\
         \hline
-        \(U_q=2\text{V}\)  & 99.08708\% & 99.91204\% & 88.14769\% & -1877.6, -39.5 & -2629.4, 1959.4 & 17398\\
+        \(U_{\mathrm{q}}=2\text{V}\)  & 99.08708\% & 99.91204\% & 88.14769\% & -1877.6, -39.5 & -2629.4, 1959.4 & 17398\\
         \hline
-        \(U_q=4\text{V}\)  & 98.41397\% & 99.79761\% & 83.84955\% & -1945.1, -21.0  & -2629.4, 1943.5 & 32510\\
+        \(U_{\mathrm{q}}=4\text{V}\)  & 98.41397\% & 99.79761\% & 83.84955\% & -1945.1, -21.0  & -2629.4, 1943.5 & 32510\\
         \hline
     \end{tabular}
-    \caption{各工作点机械部分传递函数\(G_m(s)\)辨识结果汇总}
+    \caption{各工作点机械部分传递函数\(G_{\mathrm{m}}(s)\)辨识结果汇总}
     \label{tab:各工作点Gm辨识结果汇总}
 \end{table}
 
@@ -547,7 +547,7 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 右半零点1964.2与1959.4），反映了该激励范围内辨识结果的一致性。因此取±2V辨识结果的算术平均值作为参考模型，
 得到极点[-1874.2, -38.7]、零点[-2629.4, 1961.8]、直流增益[18010]的机械传递函数：
 \begin{equation}
-    G_m(s) = \frac{-18010s^2 - 1.202\times 10^7 s + 9.29\times 10^{10}}
+    G_{\mathrm{m}}(s) = \frac{-18010s^2 - 1.202\times 10^7 s + 9.29\times 10^{10}}
     {71.12s^2 + 1.36\times 10^5 s + 5.158\times 10^6}
     \label{eq:Gm参考模型}
 \end{equation}
@@ -561,11 +561,11 @@ Q轴辨识通过重构等效输入打破反电动势反馈环，相干函数整�
 
 由于电机的速度来源与对角度传感器的微分，微分噪声极大，因此在开环和后续的闭环验证中需要加入低通滤波器
 \(F(z)=\cfrac{0.1}{1-0.9z^{-1}}\)
-\footnote{辨识时不加入该滤波器，主要出于两方面考虑。其一，滤波器串联后辨识得到的是\(F(z)\times\text{ZOH}[G_m(s)]\)的级联模型，
-从中分离\(G_m(s)\)需进行反卷积，会引入额外不确定性。其二，\(F(z)\)的极点\(z=0.9\)对应连续域频率远高于机械带宽，
+\footnote{辨识时不加入该滤波器，主要出于两方面考虑。其一，滤波器串联后辨识得到的是\(F(z)\times\text{ZOH}[G_{\mathrm{m}}(s)]\)的级联模型，
+从中分离\(G_{\mathrm{m}}(s)\)需进行反卷积，会引入额外不确定性。其二，\(F(z)\)的极点\(z=0.9\)对应连续域频率远高于机械带宽，
 Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟合该快动态，在有限数据长度下会削弱机械模态的估计精度。实测结果也表明，
 加入\(F(z)\)尽管转速信号更加平滑，但辨识的拟合优度和幅相频相关系数均有下降，模型与实测波形的吻合程度也不及不加滤波器时。
-因此采用分步策略——辨识时直接获取\(G_m(s)\)，验证时在输出端串联\(F(z)\)实现物理模型与测量滤波的解耦。}。
+因此采用分步策略——辨识时直接获取\(G_{\mathrm{m}}(s)\)，验证时在输出端串联\(F(z)\)实现物理模型与测量滤波的解耦。}。
 此时系统框图变为：
 \begin{figure}[H]
     \centering
@@ -580,25 +580,25 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
         % 放置节点
         \node [input, name=input] {};
         \node [sum, right of=input] (sum) {};
-        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_s+L_q s}\)};
-        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_m\)};
-        \node [block, right of=K] (Mech) {\(G_m(s)\)};
+        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}} s}\)};
+        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_{\mathrm{m}}\)};
+        \node [block, right of=K] (Mech) {\(G_{\mathrm{m}}(s)\)};
         \node [block, right of=Mech] (ZOH) {ZOH};
         \node [block, right of=ZOH] (F) {\(F(z)\)};
         \node [output, right of=F] (output) {};
-        \node [block, below of=K, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
+        \node [block, below of=K, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_{\mathrm{m}}\)};
 
-        \draw [->] (input) -- node {\(U_q\)} (sum);
-        \draw [->] (sum) -- node {\(U_q'\)} (RL);
-        \draw [->] (RL) -- node {\(i_q\)} (K);
-        \draw [->] (K) -- node {\(T_e\)} (Mech);
+        \draw [->] (input) -- node {\(U_{\mathrm{q}}\)} (sum);
+        \draw [->] (sum) -- node {\(U_{\mathrm{q}}'\)} (RL);
+        \draw [->] (RL) -- node {\(i_{\mathrm{q}}\)} (K);
+        \draw [->] (K) -- node {\(T_{\mathrm{e}}\)} (Mech);
         \draw [->] (Mech) -- node [name=y] {\(n\)} (ZOH);
         \draw [->] (ZOH) -- node {} (F);
-        \draw [->] (F) -- node {\(n_{fi}\)} (output);
+        \draw [->] (F) -- node {\(n_{\mathrm{fi}}\)} (output);
         \draw [->] (y) |- (Kf);
-        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.5] {\(E\)} (sum);
+        \draw [->] (Kf) -| node[pos=0.9] {\(-\)} node [pos=0.5] {\(E\)} (sum);
     \end{tikzpicture}
-    \caption{\(i_d=0\)假设下的Q轴电流-速度系统框图（带低通滤波器）}
+    \caption{\(i_{\mathrm{d}}=0\)假设下的Q轴电流-速度系统框图（带低通滤波器）}
     \label{fig:Q轴电流-速度系统框图（带低通滤波器）}
 \end{figure}
 
@@ -608,10 +608,10 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
     {1- 1.832 z^{-1} + 1.108 z^{-2} - 0.2565z^ {-3} + 0.0134z^{-4}}
 \end{equation*}
 
-选用幅值为±5V的方波信号作为激励信号，输入到\(U_q\)，同时进行D轴闭环\(i_d^*=0\)，在电机空载的情况下记录电机的转速响应。
-但首先仍需要考虑\(i_d=0\)理想条件是否满足。
+选用幅值为±5V的方波信号作为激励信号，输入到\(U_{\mathrm{q}}\)，同时进行D轴闭环\(i_{\mathrm{d}}^*=0\)，在电机空载的情况下记录电机的转速响应。
+但首先仍需要考虑\(i_{\mathrm{d}}=0\)理想条件是否满足。
 
-施加正向方波时，考虑\(i_d=0\)的理想化假设和\(i_d\ne 0\)的实际情况，分析反电动势和电磁转矩波形如下图所示。
+施加正向方波时，考虑\(i_{\mathrm{d}}=0\)的理想化假设和\(i_{\mathrm{d}}\ne 0\)的实际情况，分析反电动势和电磁转矩波形如下图所示。
 \begin{figure}[H]
     \begin{minipage}{0.5\textwidth}
         \centering
@@ -628,7 +628,7 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
     \label{fig:速度环正向方波理想id与实际id对比}
 \end{figure}
 
-分析可得反电动势相关系数99.99988\%，拟合优度99.84557\%；电磁转矩相关系数100.00000\%，拟合优度99.97289\%为极高水平，\(i_d=0\)的
+分析可得反电动势相关系数99.99988\%，拟合优度99.84557\%；电磁转矩相关系数100.00000\%，拟合优度99.97289\%为极高水平，\(i_{\mathrm{d}}=0\)的
 理想化假设可以认为是遵守的。此时仿真和实测的转速波形如下图所示。
 \begin{figure}[H]
     \centering
@@ -658,7 +658,7 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
 \end{figure}
 
 分析可得反电动势相关系数99.99990\%，拟合优度99.84985\%；电磁转矩相关系数99.99999\%，拟合优度99.95191\%为极高水平，
-同样遵守\(i_d=0\)的理想化假设。此时仿真和实测的转速波形如下图所示。
+同样遵守\(i_{\mathrm{d}}=0\)的理想化假设。此时仿真和实测的转速波形如下图所示。
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\textwidth]
@@ -670,7 +670,7 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
 两个时域波形的相关系数99.92870\%，拟合优度95.71185\%。
 
 据图\ref{fig:速度环负向方波转速对比}和图\ref{fig:速度环负向方波转速对比}可知，在暂态响应段仿真和实测波形高度一致。
-而接近稳态时角加速度趋零，惯性力矩\(J\cfrac{dn}{dt}\)随之消失，齿槽转矩作为周期性扰动在速度波形上显现出来，
+而接近稳态时角加速度趋零，惯性力矩\(J\cfrac{\dd n}{\dd t}\)随之消失，齿槽转矩作为周期性扰动在速度波形上显现出来，
 但振荡的均值与仿真波形的均值一致。说明建立的系统模型能够较为准确地解释电机的响应，但对非线性的齿槽转矩确实无法实现建模。
 
 \subsection{速度环频域矫正控制器设计与闭环验证}
@@ -678,22 +678,22 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
 速度环频域矫正控制器仍采用与电流环相同的带积分环节超前校正结构，但被控对象不同于电流环的纯RL电路，
 需要考虑反电动势反馈路径的物理存在。
 
-在\ref{sec:电流环频域矫正控制器设计}中Q轴电流环控制器\(C_q(s)\)按被控对象为纯RL电路模型\(\cfrac{1}{R_s+L_q s}\)设计，
+在\ref{sec:电流环频域矫正控制器设计}中Q轴电流环控制器\(C_{\mathrm{q}}(s)\)按被控对象为纯RL电路模型\(\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}} s}\)设计，
 并通过方波短脉冲测试（0.33ms内转速不发生明显变化）验证了该设计的有效性。但在速度环闭环控制中，转速\(n\)在秒级时间内大幅变化，
-反电动势\(\omega_e\psi_m\)随转速动态变化，不再能视为常数扰动。此时从电流给定\(i_q^*\)到转速\(n\)的物理被控对象包含反电动势反馈路径，
+反电动势\(\omega_{\mathrm{e}}\psi_{\mathrm{m}}\)随转速动态变化，不再能视为常数扰动。此时从电流给定\(i_{\mathrm{q}}^*\)到转速\(n\)的物理被控对象包含反电动势反馈路径，
 其传递函数为：
 
 \begin{equation*}
-    G_{\text{speed}}(s)=\cfrac{n(s)}{i_q^*(s)}=
-    \cfrac{C_q(s)\times\cfrac{1}{R_s+L_q s}\times\cfrac{3}{2}p\psi_m\times G_m(s)}
-    {1+\cfrac{\pi}{30}p\psi_m\times\cfrac{1}{R_s+L_q s}\times\cfrac{3}{2}p\psi_m\times G_m(s)
-    +C_q(s)\times\cfrac{1}{R_s+L_q s}}
+    G_{\text{speed}}(s)=\cfrac{n(s)}{i_{\mathrm{q}}^*(s)}=
+    \cfrac{C_{\mathrm{q}}(s)\times\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}} s}\times\cfrac{3}{2}p\psi_{\mathrm{m}}\times G_{\mathrm{m}}(s)}
+    {1+\cfrac{\pi}{30}p\psi_{\mathrm{m}}\times\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}} s}\times\cfrac{3}{2}p\psi_{\mathrm{m}}\times G_{\mathrm{m}}(s)
+    +C_{\mathrm{q}}(s)\times\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}} s}}
 \end{equation*}
 
 代入平均模型\eqref{eq:Gm参考模型}，进行ZOH按照采样频率1kHz离散化后经过低通滤波器\(F(z)=\cfrac{0.1}{1-0.9z^{-1}}\)，
 可得等价离散化被控对象模型：
 \begin{equation*}
-    G_{s}(z)=
+    G_{\mathrm{s}}(z)=
     \cfrac{
         \begin{array}[t]{@{}l@{}}
             3.64 z^{-1} + 0.1336 z^{-2} - 14.89 z^{-3} + 16.53 z^{-4} - 6.515 z^{-5} + 1.23 z^{-6} \\
@@ -722,50 +722,50 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
         % 放置节点
         \node [input, name=input] {};
         \node [sum, right of=input] (sum1) {};
-        \node [block, right of=sum1] (Cs) {\(C_s(s)\)};
+        \node [block, right of=sum1] (Cs) {\(C_{\mathrm{s}}(s)\)};
         \node [sum, right of=Cs] (sum2) {};
-        \node [block, right of=sum2] (Cq) {\(C_q(s)\)};
+        \node [block, right of=sum2] (Cq) {\(C_{\mathrm{q}}(s)\)};
         \node [sum, right of=Cq] (sum) {};
-        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_s+L_q s}\)};
-        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_m\)};
-        \node [block, right of=K] (Mech) {\(G_m(s)\)};
+        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}} s}\)};
+        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_{\mathrm{m}}\)};
+        \node [block, right of=K] (Mech) {\(G_{\mathrm{m}}(s)\)};
         \node [block, right of=Mech] (ZOH) {ZOH};
         \node [block, right of=ZOH] (Filter) {\(\cfrac{0.1}{1-0.9z^{-1}}\)};
         \node [output, right of=Filter] (output) {};
-        \node [block, below of=Mech, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
+        \node [block, below of=Mech, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_{\mathrm{m}}\)};
         \node [feedback, below of=sum, node distance=3.5cm] (F) {};
         \node [feedback, below of=Cq,node distance=2.5cm] (Fb) {};
 
         \draw [->] (input) -- node {\(n^*\)} (sum1);
         \draw [->] (sum1) -- node {\(\Delta n\)} (Cs);
-        \draw [->] (Cs) -- node {\(i_q^*\)} (sum2);
-        \draw [->] (sum2) -- node {\(\Delta i_q\)} (Cq);
-        \draw [->] (Cq) -- node {\(U_q\)} (sum);
+        \draw [->] (Cs) -- node {\(i_{\mathrm{q}}^*\)} (sum2);
+        \draw [->] (sum2) -- node {\(\Delta i_{\mathrm{q}}\)} (Cq);
+        \draw [->] (Cq) -- node {\(U_{\mathrm{q}}\)} (sum);
         \draw [->] (sum) -- node {} (RL);
-        \draw [->] (RL) -- node [name=iq] {\(i_q\)} (K);
-        \draw [->] (K) -- node {\(T_e\)} (Mech);
+        \draw [->] (RL) -- node [name=iq] {\(i_{\mathrm{q}}\)} (K);
+        \draw [->] (K) -- node {\(T_{\mathrm{e}}\)} (Mech);
         \draw [->] (Mech) -- node [name=y] {\(n\)} (ZOH);
         \draw [->] (ZOH) -- node {} (Filter);
         \draw [->] (Filter) -- node [name=y_fi] {\(\hat{n}\)} (output);
         % 反电动势反馈
         \draw [->] (y) |- (Kf);
-        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.6] {\(E\)} (sum);
-        % i_q反馈：在交叉点处加桥接小弧（跳线），与反电动势线路交叉但不连接
+        \draw [->] (Kf) -| node[pos=0.9] {\(-\)} node [pos=0.6] {\(E\)} (sum);
+        % i_{\mathrm{q}}反馈：在交叉点处加桥接小弧（跳线），与反电动势线路交叉但不连接
         \coordinate (cross) at (iq |- Kf);
         \coordinate (jT) at ([yshift=0.12cm] cross);
         \coordinate (jB) at ([yshift=-0.12cm] cross);
         \draw [-] (iq) -- (jT);
         \draw [-] (jT) -- ++(0.12, -0.1) -- ++(0, -0.04) -- ++(-0.12, -0.1);
         \draw [-] (jB) |- (Fb);
-        \draw [->] (Fb) -| node[pos=0.9] {$-$} node [pos=0.6] {} (sum2);
+        \draw [->] (Fb) -| node[pos=0.9] {\(-\)} node [pos=0.6] {} (sum2);
         \draw [-] (y_fi) |- (F);
-        \draw [->] (F) -| node[pos=0.9] {$-$} node [pos=0.6] {} (sum1);
+        \draw [->] (F) -| node[pos=0.9] {\(-\)} node [pos=0.6] {} (sum1);
     \end{tikzpicture}
     \caption{Q轴双闭环控制系统框图}
     \label{fig:Q轴双闭环控制系统框图}
 \end{figure}
 
-\subsection{速度环频域矫正控制器设计与闭环验证}
+\subsubsection{控制器设计与闭环验证}
 为了实现无静差跟踪，在被控对象前串入积分环节。构成等价被控对象，开环伯德图如下图所示。
 \begin{figure}[H]
     \centering
@@ -774,7 +774,7 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
     \caption{带积分环节的速度环等价被控对象开环频率特性}
 \end{figure}
 
-与电流环控制器一样，采用一阶超前校正控制\(C_s(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，开环截止频率设定为12Hz，
+与电流环控制器一样，采用一阶超前校正控制\(C_{\mathrm{s}}(s)=K\cfrac{Ts+1}{\alpha Ts+1}\)，开环截止频率设定为12Hz，
 以不低于40°的相位裕度为目标，在12Hz处提供最多65°的相位补偿，可以计算得到：
 \begin{equation*}
     \begin{cases}
@@ -785,12 +785,12 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
 
 最后根据等价被控对象在12Hz处的增益，调整放大系数K，最终可得带积分的速度环超前控制器：
 \begin{equation*}
-    C_s(s)=\cfrac{0.0007477s+0.0125}{0.00294s^2+s}
+    C_{\mathrm{s}}(s)=\cfrac{0.0007477s+0.0125}{0.00294s^2+s}
 \end{equation*}
 
 使用双线性变换离散化后得到：
 \begin{equation*}
-    C_s(z)=\cfrac{0.0001096+1.817\times 10^{-6}z^{-1}-0.0001078z^{-2}}{1-1.7093z^{-1}+0.7093z^{-2}}
+    C_{\mathrm{s}}(z)=\cfrac{0.0001096+1.817\times 10^{-6}z^{-1}-0.0001078z^{-2}}{1-1.7093z^{-1}+0.7093z^{-2}}
 \end{equation*}
 
 经过超前控制后的开环频率特性和闭环频率特性如下图所示。
@@ -838,7 +838,7 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
 经典的\(\cfrac{1}{Js+B}\)模型，也在该电机上存在显著的不适配。
 辨识结果的可信度因而更低。但整体上拟合优度均大于85\%，仍属可接受范围。
 
-最后，在上述测试过程中对\(i_d=0\)的理想化假设验证如下图所示。
+最后，在上述测试过程中对\(i_{\mathrm{d}}=0\)的理想化假设验证如下图所示。
 正向方波闭环测试过程中，反电动势相关系数99.99993\%，拟合优度99.88303\%；电磁转矩相关系数100.00000\%，拟合优度99.98068\%；
 负向方波闭环测试过程中，反电动势相关系数99.99992\%，拟合优度99.87259\%；电磁转矩相关系数100.00000\%，拟合优度99.98071\%。
 \begin{figure}[H]
@@ -870,9 +870,10 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
     \end{minipage}
 \end{figure}
 
-上述测试证实了在\(i_d=0\)控制下反电动势与电磁转矩的理想化假设均成立，且模型精度极高。
+\subsubsection{反电动势前馈补偿分析}
+上述测试证实了在\(i_{\mathrm{d}}=0\)控制下反电动势与电磁转矩的理想化假设均成立，且模型精度极高。
 那么进行反电动势前馈补偿，以进一步改善速度环响应应当是可行的。
-为此，在\(C_Q(s)\)输出端叠加前馈项\(\hat{E}=\cfrac{\pi}{30}np\hat{\psi}_m\)，加入前馈后的系统框图如下图所示。
+为此，在\(C_{\mathrm{Q}}(s)\)输出端叠加前馈项\(\hat{E}=\cfrac{\pi}{30}np\hat{\psi}_{\mathrm{m}}\)，加入前馈后的系统框图如下图所示。
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[auto, node distance=1.75cm, >=latex']
@@ -886,45 +887,45 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
         % 放置节点
         \node [input, name=input] {};
         \node [sum, right of=input] (sum1) {};
-        \node [block, right of=sum1] (Cs) {\(C_s(s)\)};
+        \node [block, right of=sum1] (Cs) {\(C_{\mathrm{s}}(s)\)};
         \node [sum, right of=Cs] (sum2) {};
-        \node [block, right of=sum2] (Cq) {\(C_q(s)\)};
+        \node [block, right of=sum2] (Cq) {\(C_{\mathrm{q}}(s)\)};
         \node [sum, right of=Cq] (sum) {};
-        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_s+L_q s}\)};
-        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_m\)};
-        \node [block, right of=K] (Mech) {\(G_m(s)\)};
+        \node [block, right of=sum] (RL) {\(\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}} s}\)};
+        \node [block, right of=RL] (K) {\(\cfrac{3}{2}p\psi_{\mathrm{m}}\)};
+        \node [block, right of=K] (Mech) {\(G_{\mathrm{m}}(s)\)};
         \node [block, right of=Mech] (ZOH) {ZOH};
         \node [block, right of=ZOH] (Filter) {\(\cfrac{0.1}{1-0.9z^{-1}}\)};
         \node [output, right of=Filter] (output) {};
-        \node [block, below of=Mech, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_m\)};
+        \node [block, below of=Mech, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_{\mathrm{m}}\)};
         \node [feedback, below of=sum, node distance=3.5cm] (F) {};
         \node [feedback, below of=Cq,node distance=2.5cm] (Fb) {};
-        \node [block, above of=ZOH, node distance=1.5cm] (FF) {\(\cfrac{\pi}{30}p\hat{\psi}_m\)};
+        \node [block, above of=ZOH, node distance=1.5cm] (FF) {\(\cfrac{\pi}{30}p\hat{\psi}_{\mathrm{m}}\)};
 
         \draw [->] (input) -- node {\(n^*\)} (sum1);
         \draw [->] (sum1) -- node {\(\Delta n\)} (Cs);
-        \draw [->] (Cs) -- node {\(i_q^*\)} (sum2);
-        \draw [->] (sum2) -- node {\(\Delta i_q\)} (Cq);
-        \draw [->] (Cq) -- node {\(U_q\)} (sum);
+        \draw [->] (Cs) -- node {\(i_{\mathrm{q}}^*\)} (sum2);
+        \draw [->] (sum2) -- node {\(\Delta i_{\mathrm{q}}\)} (Cq);
+        \draw [->] (Cq) -- node {\(U_{\mathrm{q}}\)} (sum);
         \draw [->] (sum) -- node {} (RL);
-        \draw [->] (RL) -- node [name=iq] {\(i_q\)} (K);
-        \draw [->] (K) -- node {\(T_e\)} (Mech);
+        \draw [->] (RL) -- node [name=iq] {\(i_{\mathrm{q}}\)} (K);
+        \draw [->] (K) -- node {\(T_{\mathrm{e}}\)} (Mech);
         \draw [->] (Mech) -- node [name=y] {\(n\)} (ZOH);
         \draw [->] (ZOH) -- node {} (Filter);
         \draw [->] (Filter) -- node [name=y_fi] {\(\hat{n}\)} (output);
         % 反电动势反馈
         \draw [->] (y) |- (Kf);
-        \draw [->] (Kf) -| node[pos=0.9] {$-$} node [pos=0.6] {\(E\)} (sum);
-        % i_q反馈：在交叉点处加桥接小弧（跳线），与反电动势线路交叉但不连接
+        \draw [->] (Kf) -| node[pos=0.9] {\(-\)} node [pos=0.6] {\(E\)} (sum);
+        % i_{\mathrm{q}}反馈：在交叉点处加桥接小弧（跳线），与反电动势线路交叉但不连接
         \coordinate (cross) at (iq |- Kf);
         \coordinate (jT) at ([yshift=0.12cm] cross);
         \coordinate (jB) at ([yshift=-0.12cm] cross);
         \draw [-] (iq) -- (jT);
         \draw [-] (jT) -- ++(0.12, -0.1) -- ++(0, -0.04) -- ++(-0.12, -0.1);
         \draw [-] (jB) |- (Fb);
-        \draw [->] (Fb) -| node[pos=0.9] {$-$} node [pos=0.6] {} (sum2);
+        \draw [->] (Fb) -| node[pos=0.9] {\(-\)} node [pos=0.6] {} (sum2);
         \draw [-] (y_fi) |- (F);
-        \draw [->] (F) -| node[pos=0.9] {$-$} node [pos=0.6] {} (sum1);
+        \draw [->] (F) -| node[pos=0.9] {\(-\)} node [pos=0.6] {} (sum1);
         \draw [->] (y_fi) |- (FF);
         \draw [->] (FF) -| node[pos=0.6] {\(\hat{E}\)} (sum);
     \end{tikzpicture}
@@ -942,7 +943,7 @@ Ho-Kalman辨识算法试图在全频段进行拟合，需分配额外阶次拟�
 
 可以发现，补偿前后响应有所改善，但没有达到质变的程度。
 分析其原因在于反电动势在奇异摄动系统中的双重属性。对闭环带宽高达2kHz、控制采样频率15kHz的电流内环而言，反电动势
-近似于缓慢变化的直流扰动（因为在设计时没有考虑），设计的控制器\(C_Q(s)\)能够很好地压制其作用。而
+近似于缓慢变化的直流扰动（因为在设计时没有考虑），设计的控制器\(C_{\mathrm{Q}}(s)\)能够很好地压制其作用。而
 对于闭环带宽仅21Hz、控制采样频率1kHz的速度外环而言，反电动势的变化正好落在其核心工作频段内。
 
 上述双重属性带来了两个影响，其一是电流环控制器本身足以压制反电动势扰动，前馈补偿带来的收益有限；其二是对于速度环
