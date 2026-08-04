@@ -20,8 +20,18 @@
 \usepackage{float} %浮动环境宏
 \usepackage{titletoc} % 调节目录字体
 \usepackage{setspace} % 使用间距宏包
+\usepackage{cite} % 引用
 \usepackage{hyperref} % 超链接宏包
 \usepackage{bookmark} % 书签宏包
+
+% 引用改为上标带中括号的阿拉伯数字
+\makeatletter
+\let\oldcite\cite
+\def\cite{\@ifnextchar[\cite@opt\cite@plain}
+\def\cite@opt[#1]#2{\textsuperscript{\oldcite[#1]{#2}}}
+\def\cite@plain#1{\textsuperscript{\oldcite{#1}}}
+\makeatother
+
 \usepackage{bm} % 加粗宏包
 \usepackage[perpage]{footmisc} % 脚注宏包
 \usepackage{tikz}
@@ -113,7 +123,7 @@
     bookmarksnumbered=true,
     bookmarksopen=true
 }
-\renewcommand{\thefootnote}{[\Roman{footnote}]}
+\renewcommand{\thefootnote}{[\ifnum\value{footnote}<27\Alph{footnote}\else\arabic{footnote}\fi]}
 % 定义样式
 \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
 \tikzstyle{sum} = [draw, circle, node distance=1.5cm]
@@ -161,6 +171,11 @@
 
 \input{章节/第五章：速度-电流环的频域矫正控制器设计.tex}
 
+\input{章节/第六章：最大转矩电流比控制MTPA.tex}
+
+%参考文献
+\input{章节/参考文献.tex}
+
 %附录
 \appendix
 \ctexset{
@@ -176,7 +191,7 @@
 
 \input{章节/附录B：Ho-Kalman辨识算法.tex}
 
-\input{章节/附录C：基于相关分析的Ho-Kalman辨识偏倚性分析.tex}
+\input{章节/附录C：基于维纳-霍普夫方程的脉冲响应估计质量分析.tex}
 
 \setcounter{tocdepth}{3}
 \addtocontents{toc}{\protect\setcounter{tocdepth}{3}}

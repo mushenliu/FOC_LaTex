@@ -1,6 +1,6 @@
 \newpage
-\section{基于相关分析的Ho-Kalman辨识偏倚性分析}
-\label{sec:基于相关分析的Ho-Kalman辨识偏倚性分析}
+\section{基于维纳-霍普夫方程的脉冲响应估计质量分析}
+\label{sec:基于维纳-霍普夫方程的脉冲响应估计质量分析}
 \subsection{噪声作用下的相关分析法简介\label{sec:噪声作用下的相关分析法简介}}
 在\ref{sec:Ho-Kalman辨识过程介绍}中介绍了电机参数辨识所用到的Ho-Kalman辨识算法，其大致包含以下几个步骤：
 \begin{itemize}
@@ -11,9 +11,7 @@
     \item 根据估计得到状态空间实现，求取系统的传递函数
 \end{itemize}
 
-Ho-Kalman算法由B.L.Ho（何炳麟）和R.E.Kalman（鲁道夫·E·卡尔曼）在《Regelungstechnik》\footnote{德语，意为《控制技术》}上
-发表的《Effective construction of linear state-variable models from input/output functions》
-（1966）中提出
+Ho-Kalman算法由B.L.Ho和R.E.Kalman提出\cite{HoKalman1966}
 \footnote{1965年以《Effective construction of linear state-variable models from input/output data》为题，
 在第3届Allerton电路与系统理论会议以会议论文形式预印，正文中提到是正式发表的版本}，
 当时他们分析的是如何从确定已知的脉冲响应序列中估计系统的阶次，并构造最小子空间实现和求取传递函数，而如何获取系统的脉冲响应序列
@@ -84,6 +82,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 \begin{equation*}
     S_{xx}(e^{\mathrm{j}\omega})=\sum_{k=-\infty}^{\infty}R_{xx}[k]\,e^{-\mathrm{j}\omega k}
 \end{equation*}
+
 互相关序列\(R_{xy}[k]\)的DTFT\(S_{xy}(e^{\mathrm{j}\omega})\)同理定义。
 由DTFT的卷积定理，离散卷积对应于频域乘积：若\(y_k = g_k * x_k\)，则\(Y(e^{\mathrm{j}\omega})=G(e^{\mathrm{j}\omega})X(e^{\mathrm{j}\omega})\)，
 其中\(G(e^{\mathrm{j}\omega})\)为脉冲响应序列\(g_k\)的DTFT，即系统的\textbf{离散频率响应}。
@@ -138,7 +137,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 假设可操作的变量为\(u_k\)，那么认为\(u_k\)是确定无噪声的信号。在上述前提下，进行基于维纳-霍普夫方程的脉冲响应求解，分析结论的
 偏差性。
 
-\subsubsection{中间到中间/输出}
+\subsubsection{中间到中间/输出\label{sec:中间到中间/输出的偏倚性分析}}
 选取\(x_k\)作为输入，而\(y_k\)作为输出，辨识前向通道频率响应\(G_1(e^{\mathrm{j}\omega})\)。时域方程满足：
 \begin{align*}
     y_k&=y_{0,k}+n_{y,k}\\
@@ -180,7 +179,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 \end{equation*}
 
 对于理想噪声\(n_{x,k}\)而言，假设其服从正态分布\(n_{x,k}\sim N(0,\sigma_x^2)\)，则
-\(R_{n_xn_x}[k]=\sigma_x^2\delta[k]\)（其中\(\delta[k]\)为克罗内克\(\delta\)函数，\(k=0\)时为1，否则为0），
+\(R_{n_xn_x}[k]=\sigma_x^2\delta[k]\)，
 即只在\(k=0\)处有非零值，呈现出尖锐的自相关特征。
 因此其DTFT为常数\(S_{n_xn_x}(e^{\mathrm{j}\omega})=\sigma_x^2\)。
 故上式可以进一步化为：
@@ -201,7 +200,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
     \label{eq:闭环有偏性公式}
 \end{equation}
 
-\subsubsection{偏差直接重构中间到中间/输出}
+\subsubsection{偏差直接重构中间到中间/输出\label{sec:偏差直接重构中间到中间/输出的偏倚性分析}}
 选取\(x_k\)作为输入，而\(y_k\)作为输出，辨识前向通道频率响应\(G_1(e^{\mathrm{j}\omega})\)。
 但此时\(x_k\)不是单独测量的物理量，而是使用测量反馈信号和给定信号，使用\(x_{\mathrm{rec},k}=u_k-e_k\)重构。
 此时时域方程满足：
@@ -219,7 +218,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
     \hat{G_1}(e^{\mathrm{j}\omega})=G_1(e^{\mathrm{j}\omega})[1-\cfrac{\sigma_e^2}{S_{x_{\mathrm{rec}}x_{\mathrm{rec}}}(e^{\mathrm{j}\omega})}]
 \end{equation*}
 
-\subsubsection{输入直接到输出}
+\subsubsection{输入直接到输出\label{sec:输入直接到输出}}
 选取\(u_k\)作为输入，而\(y_k\)作为输出，辨识闭环频率响应\(\cfrac{G_1(e^{\mathrm{j}\omega})}{1+G_1(e^{\mathrm{j}\omega})G_2(e^{\mathrm{j}\omega})}\)。
 此时时域方程满足：
 \begin{equation*}
@@ -230,7 +229,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 而这也是将闭环视为等效的开环，再使用开环辨识方法进行无偏估计，最后根据已经得到的内部传递函数反推
 未辨识部分的闭环间接法辨识。
 
-\subsection{开环带噪的偏倚性分析}
+\subsection{开环带噪的偏倚性分析\label{sec:开环带噪的偏倚性分析}}
 上述分析了闭环辨识算法在存在噪声情况的有偏性。不难推广发现，此前对开环辨识分析都是在无噪声的情况下进行的分析。实际情况中
 开环辨识过程中本身也存在噪声，这对于估计的一致性的影响需要进行分析。
 
@@ -275,9 +274,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 不相关，所以依然可以得到无偏估计的脉冲响应序列。
 
 但在实际工程中，输入侧噪声有时并不是完全的白噪声，而是和输入信号相关的噪声（如电阻压降对电压输入的敏感性）。极端情况下
-输出侧测量噪声可能也是与输入信号相关。接下来对这种极端情况进行分析。
-
-对时域表达式左右两边同时对\(u_k\)进行相关运算得到：
+输出侧测量噪声可能也是与输入信号相关，此时对时域表达式左右两边同时对\(u_k\)进行相关运算得到：
 \begin{equation*}
     R_{uy}[k]=g_k*R_{uu}[k]+R_{u\omega}[k]
 \end{equation*}
@@ -311,3 +308,110 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 
 定义信噪比为\(\cfrac{S_{uu}(e^{\mathrm{j}\omega})}{S_{un_u}(e^{\mathrm{j}\omega})}\)和\(\cfrac{S_{uu}(e^{\mathrm{j}\omega})}{S_{un_y}(e^{\mathrm{j}\omega})}\)。根据\ref{eq:开环带噪的有偏性公式}可知，
 信噪比越高，有偏估计的偏差越小，这也是工程上要求激励信号幅值较大的原因。
+
+\subsection{相干函数与估计质量的评估\label{sec:相干函数与估计质量的评估}}
+
+上述对偏置因子的分析表明，估计的偏置程度取决于等效噪声功率与输入功率谱之比，本质上取决于数据的信噪比。
+然而真实的系统频率响应\(G(e^{\mathrm{j}\omega})\)未知，
+偏置因子无法从辨识数据中直接计算，因此需要引入一个可由数据直接计算的指标来评估估计质量。
+
+定义测量输入\(x\)与测量输出\(y\)之间的相干函数为：
+\begin{equation}
+    \gamma_{xy}^2(\omega)=\frac{|S_{xy}(e^{\mathrm{j}\omega})|^2}{S_{xx}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}
+\end{equation}
+
+相干函数与皮尔逊相关系数类似。皮尔逊相关系数评估的是某一个静态输出变量可以被静态输入变量用一组静态线性关系
+解释的程度，而相干函数将其扩展到动态的时序结构。相干函数衡量在不同的频点下，某一动态输出变量可以被动态输入变量用一个线性时不变系统
+解释的程度。
+
+相干函数与估计偏差的联系依赖于具体的噪声结构，接下来对此简单分析。
+首先分析\ref{sec:中间到中间/输出的偏倚性分析}的情况。输出满足：
+\begin{align*}
+    y_k&=y_{0,k}+n_{y,k}\\
+    &=g_{1,k}*x_{0,k}+n_{y,k}
+\end{align*}
+
+两边同时对\(x_k=x_{0,k}+n_{x,k}\)进行相关运算并进行离散傅里叶变换可得：
+\begin{equation*}
+    S_{xy}(e^{\mathrm{j}\omega})=G_1(e^{\mathrm{j}\omega})S_{x_0x_0}(e^{\mathrm{j}\omega})
+\end{equation*}
+
+此外，对\(x_{k}=x_{0,k}+n_{x,k}\)进行自相关运算并进行傅里叶变换可得
+\footnote{对任意的实数信号进行自相关运算，相关函数总是偶函数。而偶函数的DTFT为实数（不含虚部\(\mathrm{j}\sin\)项），因此
+任意实数信号的自功率谱密度函数都是实数，这里的\(S_{xx}\)和下文的\(S_{yy}\)都是实数序列。}：
+\begin{equation*}
+    S_{xx}(e^{\mathrm{j}\omega})=S_{x_0x_0}(e^{\mathrm{j}\omega})+\sigma_x^2
+\end{equation*}
+
+对\(y_k=g_{1,k}*x_{0,k}+n_{y,k}\)进行自相关运算并进行傅里叶变换可得：
+\begin{equation*}
+    S_{yy}(e^{\mathrm{j}\omega})=|G_1(e^{\mathrm{j}\omega})|^2S_{x_0x_0}(e^{\mathrm{j}\omega})+\sigma_y^2
+\end{equation*}
+
+将上述三式代入相干函数定义可得：
+\begin{align*}
+    \gamma_{xy}^2(\omega)&=\cfrac{|S_{xy}(e^{\mathrm{j}\omega})|^2}{S_{xx}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}\\
+    &=\cfrac{|G_1(e^{\mathrm{j}\omega})|^2S_{x_0x_0}^2(e^{\mathrm{j}\omega})}
+    {S_{xx}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}\\
+    &=\cfrac{S_{x_0x_0}(e^{\mathrm{j}\omega})}{S_{xx}(e^{\mathrm{j}\omega})}\times
+    \cfrac{S_{x_0x_0}(e^{\mathrm{j}\omega})|G_1(e^{\mathrm{j}\omega})|^2}{S_{yy}(e^{\mathrm{j}\omega})}\\
+    &=[1-\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}]\times
+    \cfrac{S_{x_0x_0}(e^{\mathrm{j}\omega})|G_1(e^{\mathrm{j}\omega})|^2}
+    {|G_1(e^{\mathrm{j}\omega})|^2S_{x_0x_0}(e^{\mathrm{j}\omega})+\sigma_y^2}\\
+    &\le 1-\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}
+\end{align*}
+
+也就是说，相干函数总不大于偏差因子。对不等式变形可得：
+\begin{equation*}
+    \cfrac{\sigma_{x}^2}{S_{xx}(e^{\mathrm{j}\omega})} \le 1-\gamma_{xy}^2(\omega)
+\end{equation*}
+
+因此，相干函数在某个频点越高，对应的估计相对误差\(\cfrac{\sigma_{x}^2}{S_{xx}(e^{\mathrm{j}\omega})}\)上限越低，
+估计脉冲响应的期望值越接近实际脉冲响应。
+\footnote{例如在某个频点上相干函数值为0.95，则说明偏差因子\(1-\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}
+\ge 0.95\)，估计脉冲响应的期望值与实际脉冲响应在该频点处最大相对偏差\(\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}\)
+不超过0.05。}
+
+针对\ref{sec:偏差直接重构中间到中间/输出的偏倚性分析}的情况，由于输出信号的表达式结构与\ref{sec:中间到中间/输出的偏倚性分析}的
+表达式结构完全一样（噪声的正负号不影响运算结果），因此结论一样，相干函数将给出相对误差的上限。
+
+而对于\ref{sec:输入直接到输出}情况，时域表达式满足\(y_k=g_k*u_k+n_{y,k}\)，此时功率谱密度函数满足：
+\begin{equation*}
+    \begin{cases}
+        S_{uy}(e^{\mathrm{j}\omega})=G(e^{\mathrm{j}\omega})S_{uu}(e^{\mathrm{j}\omega})\\
+        S_{uu}(e^{\mathrm{j}\omega})=S_{uu}(e^{\mathrm{j}\omega})\\
+        S_{yy}(e^{\mathrm{j}\omega})=|G(e^{\mathrm{j}\omega})|^2S_{uu}(e^{\mathrm{j}\omega})+\sigma_y^2
+    \end{cases}
+\end{equation*}
+
+代入相干函数定义可得：
+\begin{align*}
+    \gamma_{uy}^2(\omega)&=\cfrac{|S_{uy}(e^{\mathrm{j}\omega})|^2}{S_{uu}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}\\
+    &=\cfrac{|G(e^{\mathrm{j}\omega})|^2S_{uu}^2(e^{\mathrm{j}\omega})}
+    {S_{uu}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}\\
+    &=\cfrac{S_{uu}(e^{\mathrm{j}\omega})}{S_{uu}(e^{\mathrm{j}\omega})}\times
+    \cfrac{S_{uu}(e^{\mathrm{j}\omega})|G(e^{\mathrm{j}\omega})|^2}{S_{yy}(e^{\mathrm{j}\omega})}\\
+    &=\cfrac{S_{uu}(e^{\mathrm{j}\omega})|G(e^{\mathrm{j}\omega})|^2}
+    {|G(e^{\mathrm{j}\omega})|^2S_{uu}(e^{\mathrm{j}\omega})+\sigma_y^2}
+\end{align*}
+
+可以发现，此时的相干函数恰好等于输出端信噪比的形式。由于本情形下输入无噪，估计是无偏的，因此相干函数不再反映估计偏差，
+而是纯粹衡量输出端的信噪比，并直接决定估计的方差。
+
+这一关系可由现代谱估计理论的结论定量化\cite{Bendat2010}：对输入输出序列分段平均后，频率响应的维纳-霍普夫方程估计脉冲响应序列
+\(\hat{G}(e^{\mathrm{j}\omega})=\cfrac{S_{xy}(e^{\mathrm{j}\omega})}{S_{xx}(e^{\mathrm{j}\omega})}\)的归一化方差近似满足：
+\begin{equation*}
+    \cfrac{\mathrm{Var}[\hat G(\mathrm{j}\omega)]}{|G(\mathrm{j}\omega)|^2}
+    \approx\cfrac{1-\gamma_{xy}^2(\omega)}{\gamma_{xy}^2(\omega)N_{\mathrm{eff}}}
+\end{equation*}
+
+其中\(N_{\mathrm{eff}}\)为等效平均次数。其物理解释为：相干函数等于输出功率中可被输入线性解释的比例，未解释的部分\(1-\gamma_{xy}^2\)构成估计的噪声源，
+\(N_{\mathrm{eff}}\)次独立平均将方差压低至原来的\(\cfrac{1}{N_{\mathrm{eff}}}\)。相应地，频率响应的相对标准差为
+\begin{equation}
+    \cfrac{\sigma_{\hat G}(\omega)}{|G(\mathrm{j}\omega)|}
+    \approx\sqrt{\cfrac{1-\gamma_{xy}^2(\omega)}{\gamma_{xy}^2(\omega)N_{\mathrm{eff}}}}
+    \label{eq:估计方差与相干函数}
+\end{equation}
+
+至于\ref{sec:开环带噪的偏倚性分析}，由于噪声结构过于复杂，相干函数与信噪比、偏差因子的关系式将无法分离。此外，在实际辨识时往往会
+简化为闭环直接辨识的类型，即认为只存在输出测量噪声且与输入不相关，因此此处不做分析。
