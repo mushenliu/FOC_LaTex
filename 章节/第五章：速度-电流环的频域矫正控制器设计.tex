@@ -167,7 +167,7 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
 负向方波中相关系数为99.42643\%，拟合优度85.36039\%，
 验证了Q轴频域校正控制器的瞬态响应有效性。
 
-\subsection{速度环辨识理论分析}
+\subsection{速度环辨识方案分析}
 虽然前文已经完成了Q轴电流环的闭环校正，但在速度环辨识中并未直接以电流给定\(i_{\mathrm{q}}^*\)作为激励
 输入。其原因是Q轴电流控制器\(C_{\mathrm{Q}}(z)\)中含有积分环节，若以\(i_{\mathrm{q}}^*\)
 \footnote{用上标*表示对某个物理量的给定/期望（如\(i_{\mathrm{d}}^*,i_{\mathrm{q}}^*,n^*\)），无上标*的表示实际值
@@ -213,15 +213,31 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
         \node [output, right of=Mech] (output) {};
         \node [block, below of=K, node distance=1.5cm] (Kf) {\(\cfrac{\pi}{30}p\psi_{\mathrm{m}}\)};
 
+        % 测量环节：转矩与转速测量噪声注入（置于主回路之上）
+        \node [sum, above of=K, node distance=2.2cm] (sumT) {};
+        \node [input, above of=sumT, node distance=0.8cm] (nT) {};
+        \node [sum, above of=Mech, node distance=2.2cm] (sumn) {};
+        \node [input, above of=sumn, node distance=0.8cm] (nn) {};
+
+        % 主回路（环内为无噪声的理想量 \(T_0\)、\(n_0\)）
         \draw [->] (input) -- node {\(U_{\mathrm{q}}\)} (sum);
         \draw [->] (sum) -- node {\(U_{\mathrm{q}}'\)} (RL);
         \draw [->] (RL) -- node {\(i_{\mathrm{q}}\)} (K);
-        \draw [->] (K) -- node {\(T_{\mathrm{e}}\)} (Mech);
-        \draw [->] (Mech) -- node [name=y] {\(n\)} (output);
-        \draw [->] (y) |- (Kf);
+        \draw [->] (K) -- node [name=t0] {\(T_{0}\)} (Mech);
+        \draw [->] (Mech) -- node [name=n0] {\(n_{0}\)} (output);
+        \draw [->] (n0) |- (Kf);
         \draw [->] (Kf) -| node[pos=0.9] {\(-\)} node [pos=0.5] {\(E\)} (sum);
+
+        % 转矩测量：\(T_0\) 叠加测量噪声 \(n_{\mathrm{T}}\) 得实测转矩 \(T_{\mathrm{e}}\)
+        \draw [->] (t0) |- (sumT);
+        \draw [->] (nT) -- node {\(n_{\mathrm{T}}\)} (sumT);
+        \draw [->] (sumT) -- node {\(T_{\mathrm{e}}\)} ++(-1cm,0);
+        % 转速测量：\(n_0\) 叠加测量噪声 \(n_{\mathrm{n}}\) 得实测转速 \(n\)
+        \draw [->] (n0) |- (sumn);
+        \draw [->] (nn) -- node {\(n_{\mathrm{n}}\)} (sumn);
+        \draw [->] (sumn) -- node {\(n\)} ++(-1cm,0);
     \end{tikzpicture}
-    \caption{\(i_{\mathrm{d}}=0\)假设下的Q轴电流-速度系统框图}
+    \caption{\(i_{\mathrm{d}}=0\)假设下带测量噪声的Q轴电流-速度系统框图}
     \label{fig:Q轴电流-速度系统框图}
 \end{figure}
 
@@ -390,7 +406,7 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
 \(G_{\mathrm{m}}(s)\)。间接法的优势是根本性的，如\ref{sec:输入直接到输出}所述，当以给定无噪信号
 \(U_{\mathrm{q}}\)作为输入时，输入与输出测量噪声不相关，维纳-霍普夫方程能够无偏估计该通道的脉冲响应。
 
-\subsection{速度环被控对象辨识与开环验证}
+\subsection{机械传递函数表达式辨识获取}
 \subsubsection{\(i_{\mathrm{d}}=0\)理想化假设分析}
 前文建立了基于\(i_{\mathrm{d}}^*=0\)假设的间接法辨识框架：将\(U_{\mathrm{q}}\)到\(n\)的通道建模为
 反电动势闭环结构，其核心在于认为\(i_{\mathrm{d}}\approx 0\)在辨识过程中始终成立，从而使反电动势
@@ -455,7 +471,7 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
 拟合优度均超过99.5\%，\(i_{\mathrm{d}}=0\)的简化假设在所有工作点下均完全成立。据此，可以确信后续基于
 \(i_{\mathrm{d}}=0\)理想模型进行的间接法辨识及机械传递函数反推具备充分的工程合理性。
 
-\subsubsection{不同工作点的机械部分传递函数辨识}
+\subsubsection{不同工作点的机械传递函数辨识}
 满足了\(i_{\mathrm{d}}=0\)的理想化近似条件后，才能真正开始基于间接法的机械传递函数辨识。
 在\(U_{\mathrm{q}}=2V\)工作点附近给予伪随机激励，幅值2V，辨识从\(U_{\mathrm{q}}\)到\(n\)的传递函数，奇异值分解如下图所示和
 数值解-解析解频域对比如下图所示。幅频相关系数99.08708\%，相频相关系数99.91204\%，复频率
@@ -591,20 +607,71 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
     \label{tab:各工作点Gm辨识结果汇总}
 \end{table}
 
-\subsubsection{反推结果的敏感性分析与辨识模型求解\label{sec:反推结果的敏感性分析}}
-实际工程上使用上述方法时，依赖于已经完成辨识的参数的精确度，若已完成辨识的参数误差较大，会导致辨识的机械传递函数
-\(G_{\mathrm{m}}(s)\)偏差严重，接下来对此进行简单分析，并说明如何从表\ref{tab:各工作点Gm辨识结果汇总}中
-得到较为合适的辨识模型。
+\subsubsection{闭环反推的一般性误差分析\label{sec:闭环反推的一般性误差分析}}
+一般地，根据闭环传递函数代数反推某一个开环传递函数，本质上是对若干传递函数的代数运算。
+开环传递函数\(G_{\mathrm{o}}(s)\)可由多个传递函数模块
+计算得到，即\(G_{\mathrm{o}}(s)=\cfrac{\prod\limits_{i=1}^nG_i(s)}{\prod\limits_{j=1}^mG_j(s)}\)。
+其中部分传递函数由实测数据辨识得到（如整体的闭环传递函数），部分传递函数由其他辨识的静态变量根据确定的结构得到（如电流环被控对象
+\(\cfrac{1}{R_{\mathrm{s}}+L_{\mathrm{q}}s}\)）。
 
-反推式\eqref{eq:机械部分传递函数表达式}可改写为乘除结构：
+一般地，开环传递函数反推式两边取对数可得：
+\begin{equation*}
+    \ln G_{\mathrm{o}}(s)=\sum\limits_{i=1}^n\ln G_i(s) - \sum\limits_{j=1}^m\ln G_j(s)=
+    \sum\limits_{k=1}^{n+m}\ln G_k(s)
+\end{equation*}
+
+对两端求全微分可得误差传播公式：
+\begin{equation*}
+    \Delta\ln G_{\mathrm{o}}(s)=\sum_{k=1}^{n+m}\cfrac{\partial\ln G_{\mathrm{o}}}{\partial\ln G_k}\Delta\ln G_k(s)
+\end{equation*}
+
+相对误差为小量时\(\Delta\ln G_{\mathrm{o}}(s)\approx\cfrac{\Delta G_{\mathrm{o}}(s)}{G_{\mathrm{o}}(s)}\)，
+\(\Delta\ln G_k(s)\approx\cfrac{\Delta G_k(s)}{G_k(s)}\)，并且定义对于\(G_k(s)\)的灵敏度函数为
+\(S_{G_k}(s)=\cfrac{\partial\ln G_{\mathrm{o}}(s)}{\partial\ln G_k(s)}\)，代入可得：
+\begin{equation*}
+    \cfrac{\Delta G_{\mathrm{o}}(s)}{G_{\mathrm{o}}(s)}
+    =\sum_{k=1}^{n+m}S_{G_k}(s)\cfrac{\Delta G_k(s)}{G_k(s)}
+\end{equation*}
+
+由于分析误差时主要关心频域信息，因此取\(s=\mathrm{j}\omega\)可得：
+\begin{equation*}
+    \cfrac{\Delta G_{\mathrm{o}}(\mathrm{j}\omega)}{G_{\mathrm{o}}(\mathrm{j}\omega)}
+    =\sum_{k=1}^{n+m}S_{G_k}(\mathrm{j}\omega)\cfrac{\Delta G_k(\mathrm{j}\omega)}{G_k(\mathrm{j}\omega)}
+\end{equation*}
+
+
+其中灵敏度函数\(S_{G_k}(\mathrm{j}\omega)\)为频率的复函数，定量刻画反推结果
+对第\(k\)个传递函数的放大倍数；\(\cfrac{\Delta G_k(\mathrm{j}\omega)}{G_k(\mathrm{j}\omega)}\)为第\(k\)个传递函数的相对误差。
+对结构已知、参数测量得到的传递函数，传递函数模块的相对误差可以被进一步拆解为对内部测量参数的相对误差。而对于辨识得到的
+传递函数，可以用\ref{eq:估计方差与相干函数}来计算相对误差。
+
+本文的速度环辨识即属上述一般框架的实例：间接法先辨识\(U_{\mathrm{q}}\)到\(n\)的闭环传递函数\(G(s)\)，再代数反推
+得到机械部分的开环传递函数\(G_{\mathrm{m}}(s)\)，反推关系为
 \begin{equation*}
     G_{\mathrm{m}}(s)=\cfrac{R_{\mathrm{s}}+L_{\mathrm{q}}s}{\cfrac{3}{2}p\psi_{\mathrm{m}}}\times G(s)\times\cfrac{1}{1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(s)}
 \end{equation*}
 
-其中\(R_{\mathrm{s}}\)、\(L_{\mathrm{q}}\)、\(\psi_{\mathrm{m}}\)与辨识得到的\(G(s)\)均存在误差
-\footnote{相电阻\(R_{\mathrm{s}}\)、Q轴同步电感\(L_{\mathrm{q}}\)和永磁体磁链\(\psi_{\mathrm{m}}\)为常数，其误差是绝对误差；
-闭环传递函数\(G(s)\)的误差指不同频点下复数误差的大小（含幅值与相位）。}。
-对上式取对数可得：
+该反推过程会引入误差，其来源可分为三类：反推输入量（辨识得到的\(G(s)\)）的测量偏差、闭环辨识的有噪声相关带来的有偏估计问题，以及
+反推式中已辨识参数\(R_{\mathrm{s}}\)、\(L_{\mathrm{q}}\)、\(\psi_{\mathrm{m}}\)的误差。
+
+其一是闭环辨识的噪声相关性问题。反电动势构成的物理闭环使输出测量噪声经反馈回路进入输入通道，使输入信号与输出测量噪声
+相关，违背维纳-霍普夫方程无偏估计的前提。此时以测量信号为输入（如直接法以实测重构转矩为输入）的辨识将产生不随数据
+长度增加而消失的系统偏差。为了规避这一问题，才选择了闭环传递函数辨识后代数反推的方案。
+
+其二是测量偏差。\(G(s)\)由有限长度的实测数据经维纳-霍普夫方程估计得到脉冲响应序列，再通过Ho-Kalman算法得到解析的传递函数。
+尽管可以证明该估计期望是无偏估计，但有限长数据带来随机误差（方差），可以用\ref{eq:估计方差与相干函数}来近似为：
+\begin{equation*}
+    \cfrac{\sigma_{\hat G}(\omega)}{|G(\mathrm{j}\omega)|}
+    \approx\sqrt{\cfrac{1-\gamma_{xy}^2(\omega)}{\gamma_{xy}^2(\omega)N_{\mathrm{eff}}}}
+\end{equation*}
+
+其三，反推式中使用的\(R_{\mathrm{s}}\)、\(L_{\mathrm{q}}\)、\(\psi_{\mathrm{m}}\)为已辨识参数，各自携带辨识误差。
+其误差经模块对应的灵敏度函数传播后表现出频率相关性，在不同频段贡献不同的相对误差。
+
+此外，反推式分母中的\(1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(s)\)在低频段因环路增益较大而趋近于零，上述各类误差会被进一步放大。
+
+\subsubsection{反推结果的敏感性分析与辨识模型求解\label{sec:反推结果的敏感性分析}}
+下面以上述误差为输入，给出反推结果误差的定量表达式。对上述反推关系取对数可得：
 \begin{equation*}
     \ln G_{\mathrm{m}}(s)=\ln(R_{\mathrm{s}}+L_{\mathrm{q}}s)+\ln G(s)-\ln\cfrac{3}{2}p\psi_{\mathrm{m}}-\ln[1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(s)]
 \end{equation*}
@@ -726,7 +793,7 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
 稳态转速和转速常数；其三是由于机械摩擦和逆变器死区导致测得的转速常数随激励电压而变化，使得用单一数值描述本身就缺乏合理性。
 最终确定开环直流增益无法由闭环数据稳健反推，故保留辨识模型，并将极低频误差交由积分环节压制。
 
-\subsubsection{辨识结果的开环验证}
+\subsection{速度环辨识的开环验证}
 根据\eqref{eq:Q轴电流-速度闭环传递函数表达式}，可以得到Q轴反电动势闭环传递函数：
 \begin{equation*}
     G(s)=\cfrac{-3774 s^2 - 2.068\times10^6 s + 2.065\times 10^{10}}

@@ -106,11 +106,33 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
     \node [output, right of=G1] (output) {};
     \node [block, below of=G1, node distance=2cm] (G2) {\(G_2(e^{\mathrm{j}\omega})\)};
 
+    % 测量环节（主回路之上：x、y；反馈下方：e）
+    \node [sum, above of=sum, node distance=2cm] (sumX) {};
+    \node [input, above of=sumX, node distance=0.7cm] (nX) {};
+    \node [sum, above of=G1, node distance=2cm] (sumY) {};
+    \node [input, above of=sumY, node distance=0.7cm] (nY) {};
+    \node [sum, below of=G2, node distance=1.8cm] (sumE) {};
+    \node [input, below of=sumE, node distance=0.7cm] (nE) {};
+
+    % 主回路（环内为无噪声的理想量 \(x_{0,k},y_{0,k},e_{0,k}\)）
     \draw [->] (input) -- node {\(u_k\)} (sum);
-    \draw [->] (sum) -- node {\(x_k\)} (G1);
-    \draw [->] (G1) -- node [name=y] {\(y_k\)} (output);
-    \draw [->] (y) |- (G2);
-    \draw [->] (G2) -| node[pos=0.2] {\(e_k\)} node[pos=0.8] {\(-\)} (sum);
+    \draw [->] (sum) -- node [name=x0] {\(x_{0,k}\)} (G1);
+    \draw [->] (G1) -- node [name=y0] {\(y_{0,k}\)} (output);
+    \draw [->] (y0) |- (G2);
+    \draw [->] (G2) -| node[pos=0.2, name=e0] {\(e_{0,k}\)} node[pos=0.8] {\(-\)} (sum);
+
+    % 测量：\(x_{0,k}\) 叠加噪声 \(n_{x,k}\) 得实测 \(x_k\)
+    \draw [->] (x0) |- (sumX);
+    \draw [->] (nX) -- node {\(n_{x,k}\)} (sumX);
+    \draw [->] (sumX) -- node {\(x_k\)} ++(-1.5cm,0);
+    % 测量：\(y_{0,k}\) 叠加噪声 \(n_{y,k}\) 得实测 \(y_k\)
+    \draw [->] (y0) |- (sumY);
+    \draw [->] (nY) -- node {\(n_{y,k}\)} (sumY);
+    \draw [->] (sumY) -- node {\(y_k\)} ++(-1.5cm,0);
+    % 测量：\(e_{0,k}\) 叠加噪声 \(n_{e,k}\) 得实测 \(e_k\)
+    \draw [->] (e0) |- (sumE);
+    \draw [->] (nE) -- node {\(n_{e,k}\)} (sumE);
+    \draw [->] (sumE) -- node {\(e_k\)} ++(1.5cm,0);
 \end{tikzpicture}
 \end{center}
 
