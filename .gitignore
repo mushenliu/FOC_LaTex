@@ -14,4 +14,3 @@
 
 # Keep tracked files in out/
 !out/*.pdf
-!out/*.synctex.gz
