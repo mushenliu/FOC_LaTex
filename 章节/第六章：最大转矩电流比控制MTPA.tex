@@ -163,9 +163,9 @@ MTPA要求\(i_{\mathrm{d}}<0\)以激发磁阻转矩。而\(\Delta L<0\)，故应
 电磁转矩满足\(T_{\mathrm{e}}=\cfrac{3}{2}p\psi_{\mathrm{m}}i_{\mathrm{q}}+\cfrac{3}{2}p\Delta Li_{\mathrm{q}}i_{\mathrm{d}}\)，可以简单变换：
 \begin{align*}
     T_{\mathrm{e}}&=\cfrac{3}{2}pi_{\mathrm{q}}(\psi_{\mathrm{m}}+\Delta Li_{\mathrm{d}})\\
-    \cfrac{2T_{\mathrm{e}}}{3p}\cfrac{1}{i_{\mathrm{q}}}&=\psi_{\mathrm{m}}+\Delta Li_{\mathrm{d}}\\
-    \cfrac{2T_{\mathrm{e}}}{3p}\cfrac{1}{i_{\mathrm{q}}}-\psi_{\mathrm{m}}&=\Delta Li_{\mathrm{d}}\\
-    i_{\mathrm{d}}&=\cfrac{2T_{\mathrm{e}}}{3\Delta Lp}\cfrac{1}{i_{\mathrm{q}}}-\cfrac{\psi_{\mathrm{m}}}{\Delta L}
+    \cfrac{2T_{\mathrm{e}}}{3p}\times\cfrac{1}{i_{\mathrm{q}}}&=\psi_{\mathrm{m}}+\Delta Li_{\mathrm{d}}\\
+    \cfrac{2T_{\mathrm{e}}}{3p}\times\cfrac{1}{i_{\mathrm{q}}}-\psi_{\mathrm{m}}&=\Delta Li_{\mathrm{d}}\\
+    i_{\mathrm{d}}&=\cfrac{2T_{\mathrm{e}}}{3\Delta Lp}\times\cfrac{1}{i_{\mathrm{q}}}-\cfrac{\psi_{\mathrm{m}}}{\Delta L}
 \end{align*}
 
 因此相等\(T_{\mathrm{e}}\)的点在坐标系中构成以\((0,-\cfrac{\psi_{\mathrm{m}}}{\Delta L})\)为中心的等轴双曲线，称为等转矩曲线。
@@ -176,8 +176,75 @@ MTPA要求\(i_{\mathrm{d}}<0\)以激发磁阻转矩。而\(\Delta L<0\)，故应
 这些最近点的轨迹共同构成MTPA曲线。等电流圆、等转矩曲线和MTPA曲线的关系如下图所示。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]
+    \includegraphics[width=0.8\textwidth]
     {图片/MTPA几何关系.png}
     \caption{MTPA几何关系}
     \label{fig:MTPA几何关系}
 \end{figure}
+
+\subsection{MTPA的工程实现方案与仿真分析}
+在经典FOC双闭环控制系统的基础上，加入MTPA的电流指令规划，可得控制系统如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/MTPA控制结构框图.png}
+    \caption{MTPA控制结构框图}
+    \label{fig:MTPA控制结构框图}
+\end{figure}
+
+对比经典FOC控制系统框图\ref{fig:经典FOC控制结构框图}可以发现，MTPA的加入
+使得速度环控制器输出不再是\(i_{\mathrm{q}}^*\)，而是变成了\(T_{\mathrm{e}}^*\)，由MTPA
+根据期望的电磁转矩计算出DQ轴电流环需要的\(i_{\mathrm{d}}^*\)和\(i_{\mathrm{q}}^*\)。因此MTPA的核心作用就是
+根据期望的电磁转矩，进行DQ轴电流环需要的电流指令规划。
+
+一般而言，计算的步骤为，根据\eqref{eq:MTPA的电磁转矩表达式}求解出在当前期望电磁转矩下的\(i_\mathrm{q}^*\)，
+然后根据MTPA曲线上\(i_\mathrm{d}^*\)与\(i_\mathrm{q}^*\)的关系\eqref{eq:MTPA的DQ电流关系式}计算出
+\(i_{\mathrm{d}}^*\)。但根据上一节的分析，从\(T_{\mathrm{e}}^*\)到\(i_{\mathrm{q}}^*\)的计算是没有简单数学表达式的，
+因此工程上常常采用查表法或牛顿迭代法。由于牛顿迭代法在该情形下收敛速度快、占用存储小，因此后续选用牛顿迭代法作为
+MTPA的实现方式。
+
+\subsubsection{MTPA的牛顿迭代法求解分析}
+要从\(T_{\mathrm{e}}^*\)中求解\(i_{\mathrm{q}}^*\)，需要求解以\(T_{\mathrm{e}}^*\)为参数的关于\(i_{\mathrm{q}}^*\)
+的一元四次方程：
+\begin{equation*}
+    f(i_{\mathrm{q}}^*)=4\Delta L^2i_{\mathrm{q}}^{*4}+\cfrac{8T_{\mathrm{e}}^*\psi_{\mathrm{m}}}{3p}i_{\mathrm{q}}^*-\cfrac{16T_{\mathrm{e}}^{*2}}{9p^2}=0
+\end{equation*}
+
+求微分得到：
+\begin{equation*}
+    f'(i_{\mathrm{q}}^*)=16\Delta L^2i_{\mathrm{q}}^{*3}+\cfrac{8T_{\mathrm{e}}^*\psi_{\mathrm{m}}}{3p}
+\end{equation*}
+
+分\(T_{\mathrm{e}}^*>0\)和\(T_{\mathrm{e}}^*<0\)两种情况讨论。根据图\ref{fig:MTPA几何关系}可以发现，在MTPA工作区中满足 
+\(T_{\mathrm{e}}^*i_{\mathrm{q}}^*>0\)。而根据\(f'(i_{\mathrm{q}}^*)\)的表达式可知，
+\(f'(i_{\mathrm{q}}^*)\)在\(T_{\mathrm{e}}^*>0\)时有\(\forall i_{\mathrm{q}}^*\ge 0,f'(i_{\mathrm{q}}^*)>0\)严格成立，而
+在\(T_{\mathrm{e}}^*<0\)时有\(\forall i_{\mathrm{q}}^*\le 0,f'(i_{\mathrm{q}}^*)<0\)严格成立，故\(f'(i_{\mathrm{q}}^*)\ne 0\)
+，牛顿迭代法将按照平方的二次收敛速度收敛。
+
+迭代函数为：
+\begin{align*}
+    g(i_{\mathrm{q}}^*)&=i_{\mathrm{q}}^*-\cfrac{f(i_{\mathrm{q}}^*)}{f'(i_{\mathrm{q}}^*)}\notag\\
+    g(i_{\mathrm{q}}^*)&=i_{\mathrm{q}}^*-\cfrac{4\Delta L^2i_{\mathrm{q}}^{*4}+\cfrac{8T_{\mathrm{e}}^*\psi_{\mathrm{m}}}{3p}i_{\mathrm{q}}^*-\cfrac{16T_{\mathrm{e}}^{*2}}{9p^2}}
+    {16\Delta L^2i_{\mathrm{q}}^{*3}+\cfrac{8T_{\mathrm{e}}^*\psi_{\mathrm{m}}}{3p}}\notag\\
+    g(i_{\mathrm{q}}^*)&=i_{\mathrm{q}}^*-\cfrac{9p^2\Delta L^2i_{\mathrm{q}}^{*4}+6pT_{\mathrm{e}}^*\psi_{\mathrm{m}}i_{\mathrm{q}}^*-4T_{\mathrm{e}}^{*2}}
+    {36p^2\Delta L^2i_{\mathrm{q}}^{*3}+6pT_{\mathrm{e}}^*\psi_{\mathrm{m}}}\notag\\
+    g(i_{\mathrm{q}}^*)&=\cfrac{27p^2\Delta L^2i_{\mathrm{q}}^{*4}+4T_{\mathrm{e}}^{*2}}{36p^2\Delta L^2i_{\mathrm{q}}^{*3}+6pT_{\mathrm{e}}^*\psi_{\mathrm{m}}}
+\end{align*}
+
+可得迭代表达式为：
+\begin{equation}
+    i_{\mathrm{q},k+1}^*=\cfrac{27p^2\Delta L^2i_{\mathrm{q},k}^{*4}+4T_{\mathrm{e}}^{*2}}{36p^2\Delta L^2i_{\mathrm{q},k}^{*3}+6pT_{\mathrm{e}}^*\psi_{\mathrm{m}}}
+    \label{eq:MTPA的牛顿迭代表达式}
+\end{equation}
+
+根据\eqref{eq:MTPA的牛顿迭代表达式}求解出\(i_{\mathrm{q}}^*\)后，结合\eqref{eq:MTPA的DQ电流关系式}可以计算出\(i_{\mathrm{d}}^*\)。
+
+\subsubsection{MTPA仿真分析}
+
+% \subsection{MTPA下的速度环被控对象分析}
+
+% \subsection{MTPA下的速度环频域矫正控制器设计}
+
+% \subsection{MTPA对辨识模型的灵敏度分析}
+
+% \subsection{鲁棒MTPA控制设计}

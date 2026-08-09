@@ -1,0 +1,97 @@
+\newpage
+\section{牛顿迭代法}
+\label{sec:牛顿迭代法}
+\subsection{牛顿迭代法的基本原理}
+\label{sec:牛顿迭代法的基本原理}
+对于任意函数\(f(x)\)，求解其零点\(x^*\)满足方程\(f(x^*)=0\)，牛顿迭代法提供了一种有效的数值逼近方法。
+
+设\(f(x)=0\)的某一精确解为\(x^*\)，选定的近似值为\(x_k\)，两者的偏差满足\(\Delta x=x^*-x_k\)，那么在\(x_k\)
+附近的一阶带皮亚诺型余项的一阶泰勒展开满足：
+\begin{equation*}
+    f(x)=f(x_k)+f'(x_k)(x-x_k)+o(x-x_k)
+\end{equation*}
+
+代入精确解\(x^*=x_k+\Delta x\)，得到：
+\begin{equation*}
+    f(x^*)=f(x_k)+f'(x_k)\Delta x+o(\Delta x)=0
+\end{equation*}
+
+由于\(x_k\)充分接近\(x^*\)，故高阶无穷小\(o(\Delta x)\)与主项相比可忽略，从而得到：
+\begin{align*}
+   0&\approx f(x_k)+f'(x_k)\Delta x\\
+   \Delta x&\approx\cfrac{-f(x_k)}{f'(x_k)}\\
+   x^*&\approx x_{k+1}=x_k-\cfrac{f(x_k)}{f'(x_k)}
+\end{align*}
+
+定义迭代函数：
+\begin{equation}
+    g(x)=x-\cfrac{f(x)}{f'(x)}
+    \label{eq:牛顿迭代法迭代函数}
+\end{equation}
+
+那么通过多次利用迭代函数\(g(x)\)进行迭代，最终\(x_k\)将收敛于\(x^*\)，即
+\footnote{此处的\(g^n\)表示\(n\)次迭代\(g\cdot g\cdot \cdots\cdot g(x_0)\)，而\(x_0\)表示选取的迭代初始值}：
+\begin{equation*}
+    \lim\limits_{n\to\infty}g^n(x_0)=x^*
+\end{equation*}
+
+\subsection{牛顿迭代法的收敛性}
+接下来对牛顿迭代法的收敛性和收敛速度进行分析。牛顿迭代法的前提要求是针对零点\(f(x^*)=0\)需要满足
+\(f'(x^*)\ne 0\)。尽管在数学上即使\(f'(x^*)=0\)，牛顿迭代法也可以收敛，但是在实际工程中，由于\(f'(x)\)在迭代函数的
+分母，且逼近时\(f'(x^*)\to 0\)，往往会产生数值风险导致迭代失败。
+
+在上述前提下，求解迭代函数的微分为：
+\begin{equation*}
+    g'(x)=1-\cfrac{[f'(x)]^2-f(x)f''(x)}{[f'(x)]^2}=\cfrac{f(x)f''(x)}{[f'(x)]^2}
+\end{equation*}
+
+由于\(f(x^*)=0,f'(x^*)\ne 0\)，因此有：
+\begin{equation*}
+    g'(x^*)=0
+\end{equation*}
+
+首先证明牛顿迭代法的收敛性。定义第\(k\)次迭代误差为\(e_k=x_k-x^*\)，收敛性就是要证明随着
+迭代次数\(k\)趋向于无穷大时满足\(\lim\limits_{k\to\infty}e_k=0\)。
+根据拉格朗日微分中值定理，在\(x_k\)和\(x^*\)之间存在\(\varepsilon_k\)满足：
+\begin{equation*}
+    g'(\varepsilon_k)=\cfrac{g(x_k)-g(x^*)}{x_k-x^*}
+\end{equation*}
+
+由迭代函数的定义\eqref{eq:牛顿迭代法迭代函数}可知，精确解\(x^*\)在迭代函数中满足：
+\begin{equation*}
+    g(x^*)=x^*-\cfrac{f(x^*)}{f'(x^*)}=x^*
+\end{equation*}
+
+同时每一次迭代满足\(x_{k+1}=g(x_k)\)。代入中值定理的结果，得到相邻两步误差的递推关系：
+\begin{equation}
+    \cfrac{e_{k+1}}{e_k}=g'(\varepsilon_k)
+    \label{eq:牛顿迭代法误差递推}
+\end{equation}
+
+由前述推导可知\(g'(x^*)=0\)。由于\(g'(x)\)在\(x^*\)处连续，故在\(x^*\)的某个邻域\(U\)内
+满足\(\forall x\in U,|g'(x)|\le\rho<1\)。当初始值\(x_0\in U\)时，将对\(\forall k=1,2,\cdots\)满足\(\varepsilon_0\in U\)，
+因此由\eqref{eq:牛顿迭代法误差递推}可得：
+\begin{equation*}
+    |e_{k+1}|=|g'(\varepsilon_k)|\cdot|e_k|\le\rho|e_k|
+\end{equation*}
+
+递推可得\(\lim\limits_{k\to\infty}|e_k|\le\lim\limits_{k\to\infty}\rho^k|e_0|=0\)，故\textbf{牛顿迭代法在初始值
+位于零点的邻域\(U\)时，迭代结果将是收敛的}，这一性质称为\textbf{局部收敛性}。
+
+对于满足\(f'(x^*)\ne 0,g'(x^*)=0\)的情况，牛顿迭代法可以保证平方的二次收敛速度。
+针对\([\varepsilon_k,x^*]\)或\([x^*,\varepsilon_k]\)，再次应用拉格朗日微分中值定理可得：
+\begin{equation*}
+    g''(\eta_k)=\cfrac{g'(\varepsilon_k)-g'(x^*)}{\varepsilon_k-x^*}=\cfrac{\cfrac{e_{k+1}}{e_k}}{\varepsilon_k-x^*}
+\end{equation*}
+
+加绝对值可得\(|g''(\eta_k)|=\cfrac{|\cfrac{e_{k+1}}{e_k}|}{|\varepsilon_k-x^*|}\)。
+由于\(\varepsilon_k\in[x_k,x^*]\)或\(\varepsilon_k\in[x^*,x_k]\)，
+故\(|\varepsilon_k-x^*|\le|e_k|\)，也就有\(\cfrac{1}{|\varepsilon_k-x^*|}\ge \cfrac{1}{|e_k|}\)，代入可得：
+\begin{align*}
+    |g''(\eta_k)|&= \cfrac{|e_{k+1}|}{|e_k|}\times\cfrac{1}{|\varepsilon_k-x^*|}\\
+    |g''(\eta_k)|&\ge \cfrac{|e_{k+1}|}{|e_k|}\times\cfrac{1}{|e_k|}=\cfrac{|e_{k+1}|}{|e_k|^2}\\
+    |e_{k+1}|&\le|g''(\eta_k)||e_k|^2
+\end{align*}
+
+误差序列将是平方收敛的，称为\textbf{二次收敛性}，这保证了可以在几次迭代内让结果迅速收敛到\(x^*\)附近，不需要
+过多的计算。
