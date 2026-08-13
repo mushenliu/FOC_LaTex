@@ -215,11 +215,16 @@ MTPA的实现方式。
     f'(i_{\mathrm{q}}^*)=16\Delta L^2i_{\mathrm{q}}^{*3}+\cfrac{8T_{\mathrm{e}}^*\psi_{\mathrm{m}}}{3p}
 \end{equation*}
 
+再次求微分可得：
+\begin{equation*}
+    f''(i_{\mathrm{q}}^*)=48\Delta L^2i_{\mathrm{q}}^{*2}\ge 0
+\end{equation*}
+
 分\(T_{\mathrm{e}}^*>0\)和\(T_{\mathrm{e}}^*<0\)两种情况讨论。根据图\ref{fig:MTPA几何关系}可以发现，在MTPA工作区中满足 
-\(T_{\mathrm{e}}^*i_{\mathrm{q}}^*>0\)。而根据\(f'(i_{\mathrm{q}}^*)\)的表达式可知，
+\(T_{\mathrm{e}}^*\times i_{\mathrm{q}}^*>0\)。而根据\(f'(i_{\mathrm{q}}^*)\)的表达式可知，
 \(f'(i_{\mathrm{q}}^*)\)在\(T_{\mathrm{e}}^*>0\)时有\(\forall i_{\mathrm{q}}^*\ge 0,f'(i_{\mathrm{q}}^*)>0\)严格成立，而
 在\(T_{\mathrm{e}}^*<0\)时有\(\forall i_{\mathrm{q}}^*\le 0,f'(i_{\mathrm{q}}^*)<0\)严格成立，故\(f'(i_{\mathrm{q}}^*)\ne 0\)
-，牛顿迭代法将按照平方的二次收敛速度收敛。
+，结合\(f''(i_{\mathrm{q}}^*)\ge 0\)，牛顿迭代法将在全局收敛，并且按照平方速度收敛。
 
 迭代函数为：
 \begin{align*}
@@ -240,11 +245,110 @@ MTPA的实现方式。
 根据\eqref{eq:MTPA的牛顿迭代表达式}求解出\(i_{\mathrm{q}}^*\)后，结合\eqref{eq:MTPA的DQ电流关系式}可以计算出\(i_{\mathrm{d}}^*\)。
 
 \subsubsection{MTPA仿真分析}
+在MATLAB和Simulink中搭建仿真模型，电机参数\(R_{\mathrm{s}}=0.05\Omega,L_{\mathrm{d}}=0.28\text{mH},
+L_{\mathrm{q}}=0.7\text{mH},\psi_{\mathrm{m}}=0.15\text{Wb},p=4,J=0.05\text{kg·m}^2,B=0.02\text{N·m·s/rad}\)，
+母线电压300V，额定电流150A。
 
-% \subsection{MTPA下的速度环被控对象分析}
+速度环和两个电流环的控制器都采用简单的PI控制（根据波形简单调参），并且\(i_\mathrm{d}^*=0\)控制策略和MTPA控制策略使用完全相同的控制器参数。
+速度环控制器输出统一为\(T_{\mathrm{e}}^*\)。在\(i_\mathrm{d}^*=0\)控制策略中根据
+\(T_{\mathrm{e}}^*=\cfrac{3}{2}p\psi_{\mathrm{m}}i_{\mathrm{q}}^*\)
+计算出给定的\(i_{\mathrm{q}}^*\)。而在MTPA控制策略中根据5次牛顿迭代求解\(i_{\mathrm{q}}^*\)和\(i_{\mathrm{d}}^*\)，
+初始值选为\(i_{\mathrm{q},0}^*=0\)
+\footnote{工程上采用固定迭代次数而非在线收敛判据，以保证每个控制周期的计算时间恒定。在初值\(i_{\mathrm{q},0}^*=0\)下，
+牛顿迭代的第一步恰好给出\(i_{\mathrm{d}}^*=0\)控制策略电流指令，随后单调收敛。}。
 
-% \subsection{MTPA下的速度环频域矫正控制器设计}
 
-% \subsection{MTPA对辨识模型的灵敏度分析}
+按照如下过程运行（共3个周期，每个周期15s）：
+\begin{itemize}
+    \item 空载正向启动，给定速度1000rpm，持续3s
+    \item 保持给定转速1000rpm，负载转矩突变为200N·m，持续3s
+    \item 保持给定转速1000rpm，负载转矩突变为0N·m，持续3s
+    \item 保持给定转速1000rpm，负载转矩突变为-200N·m，持续3s
+    \item 保持给定转速1000rpm，负载转矩突变为0N·m，持续3s
+    \item 给定速度突变为-1000rpm，持续3s
+    \item 保持给定转速-1000rpm，负载转矩突变为200N·m，持续3s
+    \item 保持给定转速-1000rpm，负载转矩突变为0N·m，持续3s
+    \item 保持给定转速-1000rpm，负载转矩突变为-200N·m，持续3s
+    \item 保持给定转速-1000rpm，负载转矩突变为0N·m，持续3s
+    \item 给定速度突变为0rpm，持续3s
+    \item 保持给定转速0rpm，负载转矩突变为200N·m，持续3s
+    \item 保持给定转速0rpm，负载转矩突变为0N·m，持续3s
+    \item 保持给定转速0rpm，负载转矩突变为-200N·m，持续3s
+    \item 保持给定转速0rpm，负载转矩突变为0N·m，持续3s
+\end{itemize}
 
-% \subsection{鲁棒MTPA控制设计}
+全程速度波形图如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/MTPA仿真速度波形.png}
+    \caption{MTPA仿真速度波形}
+    \label{fig:MTPA仿真速度波形}
+\end{figure}
+
+可以发现，\(i_{\mathrm{d}}^*=0\)和MTPA控制策略相比在抗扰性能上没有很大差距。
+在200N·m的突变负载下，动态最大转速降都在±200rpm左右，只是MTPA的最大动态转速降略小一些，如下放大图\ref{fig:MTPA仿真速度波形抗扰过程放大}所示。
+而在跟踪性能上，空载给定转速突变时MTPA超调更小、响应更加柔和，如下放大图\ref{fig:MTPA仿真速度波形跟踪过程放大}所示。
+主要原因是对于相同的\(T_{\mathrm{e}}^*\)，MTPA会将部分转矩产生任务分担给D轴电流环执行。而由于\(L_{\mathrm{d}}<L_{\mathrm{q}}\)，
+使得D轴的响应速度比Q轴的响应速度更快，改变了从\(T_{\mathrm{e}}^*\)到转速\(n\)的等效传递函数。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/MTPA仿真速度波形（抗扰过程放大）.png}
+        \caption{MTPA仿真速度波形（抗扰过程放大）}
+        \label{fig:MTPA仿真速度波形抗扰过程放大}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/MTPA仿真速度波形（跟踪过程放大）.png}
+        \caption{MTPA仿真速度波形（跟踪过程放大）}
+        \label{fig:MTPA仿真速度波形跟踪过程放大}    
+    \end{minipage}
+\end{figure}
+
+接下来观察运行过程中的给定电流轨迹和电流幅值\(I_\mathrm{s}=\sqrt{i_{\mathrm{q}}^2+i_{\mathrm{d}}^2}\)，如下图所示。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/MTPA仿真给定电流轨迹波形.png}
+        \caption{MTPA仿真给定电流轨迹波形}
+        \label{fig:MTPA仿真给定电流轨迹波形}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/MTPA仿真相电流幅值.png}
+        \caption{MTPA仿真相电流幅值}
+        \label{fig:MTPA仿真相电流幅值}
+    \end{minipage}
+\end{figure}
+
+MTPA控制策略下，给定电流轨迹沿着MTPA曲线移动，在相同转矩下产生较小的相电流峰值。如下放大图\ref{fig:MTPA仿真相电流幅值放大}
+所示，在同样的200N·m负载下，MTPA控制策略的稳态相电流峰值约200A（对应相电流有效值约141A，低于额定电流150A），
+而\(i_{\mathrm{d}}^*=0\)控制策略的稳态相电流峰值约225A（对应相电流有效值约159A，超出额定电流）。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/MTPA仿真相电流幅值（放大）.png}
+    \caption{MTPA仿真相电流幅值（放大）}
+    \label{fig:MTPA仿真相电流幅值放大}
+\end{figure}
+
+由MTPA规划得到的最优电流超前角\(\gamma=-\arctan\cfrac{i_{\mathrm{d}}^*}{i_{\mathrm{q}}^*}\)波形如下图所示。可以发现
+在空载时最优电流超前角\(\gamma\approx 0°\)或\(\gamma\approx 180°\)，MTPA控制效果近似为\(i_{\mathrm{d}}^*=0\)控制策略。
+而在负载较大时最优电流超前角\(\gamma\approx 25°\)或\(\gamma\approx 155°\)，
+MTPA控制效果才能相较于\(i_{\mathrm{d}}^*=0\)控制策略有较为明显的区别。这也说明MTPA需要高负载来显现出效果。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/MTPA最优电流超前角波形.png}
+    \caption{MTPA最优电流超前角波形}
+    \label{fig:MTPA最优电流超前角波形}
+\end{figure}
+
+\subsection{MTPA的工程实测与适用边界分析}
+
+\subsection{最大转矩电压比控制MTPV简介}

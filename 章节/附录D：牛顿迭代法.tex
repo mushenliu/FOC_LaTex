@@ -35,7 +35,7 @@
     \lim\limits_{n\to\infty}g^n(x_0)=x^*
 \end{equation*}
 
-\subsection{牛顿迭代法的收敛性}
+\subsection{牛顿迭代法的局部收敛性与二次收敛性}
 接下来对牛顿迭代法的收敛性和收敛速度进行分析。牛顿迭代法的前提要求是针对零点\(f(x^*)=0\)需要满足
 \(f'(x^*)\ne 0\)。尽管在数学上即使\(f'(x^*)=0\)，牛顿迭代法也可以收敛，但是在实际工程中，由于\(f'(x)\)在迭代函数的
 分母，且逼近时\(f'(x^*)\to 0\)，往往会产生数值风险导致迭代失败。
@@ -93,5 +93,69 @@
     |e_{k+1}|&\le|g''(\eta_k)||e_k|^2
 \end{align*}
 
-误差序列将是平方收敛的，称为\textbf{二次收敛性}，这保证了可以在几次迭代内让结果迅速收敛到\(x^*\)附近，不需要
+在初始值位于零点的邻域\(U\)时，\textbf{误差序列将是按照平方速度收敛的}，称为\textbf{二次收敛性}，这保证了可以在几次迭代内让结果迅速收敛到\(x^*\)附近，不需要
 过多的计算。
+
+\subsection{牛顿迭代法的全局收敛性}
+局部收敛性定理要求初始值\(x_0\)位于零点\(x^*\)的邻域\(U\)内，而实际工程中初始值往往远离零点，
+此时\eqref{eq:牛顿迭代法误差递推}给出的收缩条件\(|g'(x)|\le\rho<1\)不再必然成立，因此局部收敛性
+不足以回答迭代能否从任意初值出发收敛。但工程上需要牛顿迭代求解的部分函数满足更严格的凸函数条件：
+函数\(f(x)\)在区间\([0,+\infty)\)上满足：
+\begin{equation*}
+    \begin{cases}
+        f(0)<0\\
+        f'(x)>0\\
+        f''(x)\ge 0\\
+        \lim\limits_{x\to+\infty}f(x)=+\infty
+    \end{cases}
+\end{equation*}
+
+根据零点存在定理，由\(f(0)<0\)、\(\lim\limits_{x\to+\infty}f(x)=+\infty\)和\(f'(x)>0\)，可知，
+在迭代区间[0,+∞)上存在唯一零点\(x^*\)。并且根据凸函数的性质\(f''(x)\ge 0\)可知
+函数升高速度越来越快，则对凸函数而言，任意两点\(0<a<b\)都满足：
+\begin{equation*}
+    f(b)\ge f(a)+f'(a)(b-a)
+\end{equation*}
+
+代入常用初始值\(0=x_0<x^*\)有：
+\begin{align*}
+    0&\ge f(0)+f'(0)x^*\\
+    -f(0)&\ge f'(0)x^*\\
+    -\cfrac{f(0)}{f'(0)}&\ge x^*\\
+    x_1&\ge x^*
+\end{align*}
+
+即从常用迭代初值\(x_0=0\)出发，牛顿迭代一步即越过零点进入其右侧。
+
+当\(x_k>x^*\)时，由\(f\)严格单调递增可知\(f(x_k)>0\)，故\(x_{k+1}=x_k-\cfrac{f(x_k)}{f'(x_k)}<x_k\)，
+迭代严格递减。同时由拉格朗日中值定理，存在\(\varepsilon_k\in(x^*,x_k)\)使得\(f'(\varepsilon_k)=\cfrac{f(x_k)-f(x^*)}{x_k-x^*}\)，
+也就满足\(f(x_k)=f'(\varepsilon_k)(x_k-x^*)\)
+而\(f'(x)\ge 0\)单调，故\(f'(\varepsilon_k)\le f'(x_k)\)，于是：
+\begin{equation*}
+    f(x_k)\le f'(x_k)(x_k-x^*)
+\end{equation*}
+
+代入迭代函数\eqref{eq:牛顿迭代法迭代函数}得：
+\begin{equation*}
+    x_{k+1}=x_k-\cfrac{f(x_k)}{f'(x_k)}\ge x^*
+\end{equation*}
+
+即迭代始终保持在零点右侧且严格单调递减，于是综合可得：
+\begin{equation*}
+    \begin{cases}
+        0=x_0<x^*<x_1\\
+        x^*\le\cdots<x_3<x_2<x_1
+    \end{cases}
+\end{equation*}
+
+数列\(x_k\)单调递减且有下界\(x^*\)，由单调有界定理知序列收敛，设
+\(\lim\limits_{k\to+\infty}x_k=\bar{x}\ge x^*\)。对迭代关系式\eqref{eq:牛顿迭代法迭代函数}两边取极限可得：
+\begin{align*}
+    \lim\limits_{k\to+\infty}x_{k+1}&=\lim\limits_{k\to+\infty}x_k-\cfrac{f(x_k)}{f'(x_k)}\\
+    \bar{x}&=\bar{x}-\cfrac{f(\bar{x})}{f'(\bar{x})}
+\end{align*}
+
+由于\(f'(\bar{x})>0\)可得\(f(\bar{x})=0\)，而零点唯一，故\(\bar{x}=x^*\)。
+
+因此\textbf{牛顿迭代法处理凸函数时，从工程初值\(x_0=0\)出发收敛于\(x^*\)}，这一性质称为\textbf{全局收敛性}。
+当\(x_k\)进入\(x^*\)的邻域\(U\)后，上一节关于二次收敛性的分析成立。
