@@ -19,8 +19,7 @@
 可近似视为常量），若能够让\(i_{\mathrm{d}}<0\)，则磁阻转矩
 \(\cfrac{3}{2}pi_{\mathrm{q}}(L_{\mathrm{d}}-L_{\mathrm{q}})i_{\mathrm{d}}\)在
 \(i_{\mathrm{q}}>0\)时为正，产生正的磁阻转矩；而在\(i_{\mathrm{q}}<0\)时为负，产生负的磁阻转矩，此时
-磁阻转矩自发根据Q轴电流的正负号调整方向，保持与永磁转矩同号叠加增大
-，从而在不增大电流幅值的前提下增大总转矩。因此，
+磁阻转矩自发根据Q轴电流的正负号调整方向，保持与永磁转矩同号叠加增大，从而在不增大电流幅值的前提下增大总转矩。因此，
 最大转矩电流比控制技术（Maximum Torque Per Ampere，MTPA）应运而生，旨在通过调整D轴电流、激发
 磁阻转矩，实现用最小的电流有效值换取最大的电磁转矩。
 
@@ -183,6 +182,7 @@ MTPA要求\(i_{\mathrm{d}}<0\)以激发磁阻转矩。而\(\Delta L<0\)，故应
 \end{figure}
 
 \subsection{MTPA的工程实现方案与仿真分析}
+\label{sec:MTPA的工程实现方案与仿真分析}
 在经典FOC双闭环控制系统的基础上，加入MTPA的电流指令规划，可得控制系统如下图所示。
 \begin{figure}[H]
     \centering
@@ -349,6 +349,171 @@ MTPA控制效果才能相较于\(i_{\mathrm{d}}^*=0\)控制策略有较为明显
     \label{fig:MTPA最优电流超前角波形}
 \end{figure}
 
-\subsection{MTPA的工程实测与适用边界分析}
+\subsection{MTPA的工程实测与提升率}
+\subsubsection{MTPA的工程实测}
+接下来尝试将MTPA应用于实际电机，电机参数根据前文得到的辨识结果如下：
+\(R_{\mathrm{s}}=5.70125\Omega,L_{\mathrm{d}}=1.86152\text{mH},
+L_{\mathrm{q}}=2.16828\text{mH},\psi_{\mathrm{m}}=9.65548\text{mWb},p=14,
+J\approx1.37\times10^{-5}\text{kg·m}^2,B\approx5.30\times10^{-4}\text{N·m·s/rad}\)\footnote{转动惯量\(J\)与阻尼系数\(B\)由第五章机械传递函数
+辨识结果近似评估}。母线电压12V，额定电流0.9A。
 
-\subsection{最大转矩电压比控制MTPV简介}
+电流环控制器仍采用\ref{sec:电流环频域矫正控制器设计}中的结果。而由于速度环的被控对象改变，速度环控制器输出
+从\(i_\mathrm{q}^*\)变为了\(T_{\mathrm{e}}^*\)，因此控制器需要重新设计。这里采用基本的PI控制，简单
+进行调参达到稳定。
+
+实测得到在空载情况下，两个控制策略的正负阶跃速度给定响应如下图所示。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/MTPA空载转速波形.png}
+    \caption{MTPA空载转速波形}
+    \label{fig:MTPA空载转速波形}
+\end{figure}
+
+可以发现MTPA和\(i_\mathrm{d}^*=0\)策略在该电机空载实测中没有显著的差异。继续观察空载过程中的
+期望电流矢量\((i_{\mathrm{q}}^*,i_{\mathrm{d}}^*)\)和相电流峰值\(I_{\mathrm{s}}=\sqrt{i_{\mathrm{q}}^2+i_{\mathrm{d}}^2}\)
+发现，在牛顿迭代下期望电流矢量确实沿着MTPA曲线变化，但是相电流峰值没有显著降低。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/MTPA空载期望电流矢量轨迹.png}
+        \caption{MTPA空载期望电流矢量轨迹}
+        \label{fig:MTPA空载期望电流矢量轨迹}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/MTPA空载相电流峰值.png}
+        \caption{MTPA空载相电流峰值}
+        \label{fig:MTPA空载相电流峰值}
+    \end{minipage}
+\end{figure}
+
+根据\ref{sec:MTPA的工程实现方案与仿真分析}中的仿真分析可知，MTPA的作用需要负载较大时才能体现出来，因此空载时没有显著差异
+并不可断言MTPA在该电机上无价值。由于缺乏提供恒定负载的手段，因此取较为极端的完全堵转情况（设定速度环控制器最大输出
+为\(T_{\mathrm{e},\max}^*=0.15\text{N·m}\)）。此时得到的转速响应波形如下图所示，可见基本被完全堵转转速恒定为0。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]
+    {图片/MTPA堵转转速波形.png}
+    \caption{MTPA堵转转速波形}
+    \label{fig:MTPA堵转转速波形}
+\end{figure}
+
+观察过程中的电流矢量和相电流峰值波形如下图所示。在堵转情况下两个控制策略的相电流峰值均达到了
+约0.75A，而期望电流矢量相较于空载有一定程度的扩展。但是整体来看MTPA和
+\(i_{\mathrm{d}}^*=0\)控制策略在堵转情况下仍然没有显著差异。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/MTPA堵转期望电流矢量轨迹.png}
+        \caption{MTPA堵转期望电流矢量轨迹}
+        \label{fig:MTPA堵转期望电流矢量轨迹}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/MTPA堵转相电流峰值.png}
+        \caption{MTPA堵转相电流峰值}
+        \label{fig:MTPA堵转相电流峰值}
+    \end{minipage}
+\end{figure}
+
+从MTPA期望电流矢量来看，当\(i_{\mathrm{q}}^*\)接近0.8A时，\(i_{\mathrm{d}}^*\)仅为-5mA左右，两者相差两个数量级。
+此时的最优电流超前角\(\gamma=-\arctan\cfrac{i_{\mathrm{d}}^*}{i_{\mathrm{q}}^*}\approx 0\)。考虑到实际控制系统中
+存在的采样噪声，使得\(i_{\mathrm{d}}^*=-5\text{mA}\)的控制效果与\(i_{\mathrm{d}}^*=0\)将不存在可被检验到的差异。
+
+\subsubsection{MTPA提升率分析}
+经过上文分析可知，MTPA在实验平台电机上的作用效果极不明显。接下来从电机自身参数角度分析原因。
+
+在\(i_\mathrm{q}-i_{\mathrm{d}}\)坐标系下，用相电流峰值\(I_\mathrm{s}\)和电流超前角\(\gamma\)描述的坐标满足：
+\begin{equation*}
+    \begin{cases}
+        i_{\mathrm{q}}^* = I_\mathrm{s}\cos\gamma \\
+        i_{\mathrm{d}}^* = -I_\mathrm{s}\sin\gamma
+    \end{cases}
+\end{equation*}
+
+代入电磁转矩表达式可得：
+\begin{align*}
+    T_{\mathrm{e}}^* &= \cfrac{3}{2}pi_{\mathrm{q}}[\psi_{\mathrm{m}}+(L_{\mathrm{d}}-L_{\mathrm{q}})i_{\mathrm{d}}]\\
+    &=\cfrac{3}{2}p\psi_{\mathrm{m}}I_{\mathrm{s}}\cos\gamma+\cfrac{3}{4}p(L_{\mathrm{q}}-L_{\mathrm{d}})I_{\mathrm{s}}^2\sin2\gamma\\
+    &=T_{\mathrm{PM}}+T_{\mathrm{RE}}
+\end{align*}
+
+其中\(T_{\mathrm{PM}}=\cfrac{3}{2}p\psi_{\mathrm{m}}I_{\mathrm{s}}\cos\gamma\)为永磁转矩，
+\(T_{\mathrm{RE}}=\cfrac{3}{4}p(L_{\mathrm{q}}-L_{\mathrm{d}})I_{\mathrm{s}}^2\sin2\gamma\)为磁阻转矩。
+为了分析MTPA带来的提升率，需要分析磁阻转矩\(T_{\mathrm{RE}}\)对总的电磁转矩的贡献：
+\begin{align*}
+    \cfrac{T_{\mathrm{RE}}}{T_{\mathrm{e}}}&=\cfrac{T_{\mathrm{RE}}}{T_{\mathrm{PM}}+T_{\mathrm{RE}}}\\
+    &=\cfrac{1}{1+\cfrac{T_{\mathrm{PM}}}{T_{\mathrm{RE}}}}
+\end{align*}
+
+计算磁阻转矩与永磁转矩比值为：
+\begin{align*}
+    \cfrac{T_{\mathrm{PM}}}{T_{\mathrm{RE}}}&=\cfrac{\cfrac{3}{2}p\psi_{\mathrm{m}}I_{\mathrm{s}}\cos\gamma}
+    {\cfrac{3}{4}p(L_{\mathrm{q}}-L_{\mathrm{d}})I_{\mathrm{s}}^2\sin2\gamma}\\
+    &=\cfrac{2\psi_{\mathrm{m}}\cos\gamma}{(L_{\mathrm{q}}-L_{\mathrm{d}})I_{\mathrm{s}}\sin2\gamma}\\
+    &=\cfrac{\psi_{\mathrm{m}}}{(L_{\mathrm{q}}-L_{\mathrm{d}})I_{\mathrm{s}}\sin\gamma}
+\end{align*}
+
+定义电机的特征电流为\(I_{\mathrm{ch}}=\cfrac{\psi_{\mathrm{m}}}{L_{\mathrm{d}}}\)，凸极率为
+\(\rho=\cfrac{L_{\mathrm{q}}}{L_\mathrm{d}}\)，那么可以进一步得到：
+\begin{align*}
+    \cfrac{T_{\mathrm{PM}}}{T_{\mathrm{RE}}}&=\cfrac{\cfrac{\psi_{\mathrm{m}}}{L_{\mathrm{d}}}}
+    {(\cfrac{L_{\mathrm{q}}}{L_{\mathrm{d}}}-1)I_{\mathrm{s}}\sin\gamma}\\
+    &=\cfrac{I_{\mathrm{ch}}}{(\rho-1)I_{\mathrm{s}}\sin\gamma}
+\end{align*}
+
+由于在MTPA工作区内电流超前角满足\(\gamma\in(0°,90°)\cup(90°,180°)\)，故\(0<\sin\gamma<1\)，因此
+\(\cfrac{T_{\mathrm{PM}}}{T_{\mathrm{RE}}}>\cfrac{I_{\mathrm{ch}}}{(\rho-1)I_{\mathrm{s}}}\)，
+代入可得磁阻转矩对电磁转矩的贡献满足：
+\begin{align}
+    \cfrac{T_{\mathrm{RE}}}{T_{\mathrm{e}}}&=\cfrac{1}{1+\cfrac{T_{\mathrm{PM}}}{T_{\mathrm{RE}}}}\notag\\
+    \cfrac{T_{\mathrm{RE}}}{T_{\mathrm{e}}}&=\cfrac{1}{1+\cfrac{I_{\mathrm{ch}}}{(\rho-1)I_{\mathrm{s}}\sin\gamma}}\notag\\
+    \cfrac{T_{\mathrm{RE}}}{T_{\mathrm{e}}}&<\cfrac{1}{1+\cfrac{I_{\mathrm{ch}}}{(\rho-1)I_{\mathrm{s}}}}
+    \label{eq:磁阻转矩贡献上限表达式}
+\end{align}
+
+从上式中可以得到两个结论。其一是凸极率\(\rho=\cfrac{L_{\mathrm{q}}}{L_\mathrm{d}}>1\)越大，
+磁阻转矩对电磁转矩的贡献上限越大。其二是特征电流\(I_{\mathrm{ch}}\)相较于相电流峰值\(I_{\mathrm{s}}\)的
+比值\(\cfrac{I_{\mathrm{ch}}}{I_{\mathrm{s}}}\)越小，也就是负载越重，磁阻转矩对电磁转矩的贡献上限也越大。
+
+一般情况下取电机工作在额定电流的负载为额定负载。对于实验用电机，额定电流0.9A，对应为单相电流有效值0.9A，
+相电流峰值\(I_{\mathrm{s}}=0.9\sqrt{2}=1.273\text{A}\)。代入其余数据可得凸极率
+\(\rho=\cfrac{L_{\mathrm{q}}}{L_\mathrm{d}}=\cfrac{2.16828\text{mH}}{1.86152\text{mH}}=1.1647\)，特征电流
+\(I_{\mathrm{ch}}=\cfrac{\psi_{\mathrm{m}}}{L_{\mathrm{d}}}=\cfrac{9.65548\text{mWb}}{1.86152\text{mH}}=
+5.186\text{A}\)。
+
+代入可得额定负载下磁阻转矩贡献上限为：
+\begin{equation*}
+    \cfrac{T_{\mathrm{RE}}}{T_{\mathrm{e}}}<\cfrac{1}{1+\cfrac{I_{\mathrm{ch}}}{(\rho-1)I_{\mathrm{s}}}}=3.88\%
+\end{equation*}
+
+磁阻转矩贡献最大不超过3.88\%，因此MTPA在该实验电机上的效果和\(i_{\mathrm{d}}^*=0\)的控制效果无法区分。
+相较之下，在\ref{sec:MTPA的工程实现方案与仿真分析}中使用的电机仿真参数可以计算得到磁阻转矩贡献上限为37.26\%，
+MTPA的控制效果可以被检验到。
+
+将实验用电机的参数进行仿真可以发现，在给定负载0.3N·m、给定转速300rpm的情况下，稳态时\(i_\mathrm{d}^*=0\)的相电流峰值为1.50337A，
+MTPA的相电流峰值为1.50185A，电流仅仅降低了0.1011\%。
+\begin{figure}[H]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/实验电机仿真相电流峰值对比（整体）.png}
+        \caption{实验电机仿真相电流峰值对比（整体）}
+        \label{fig:实验电机仿真相电流峰值对比（整体）}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {图片/实验电机仿真相电流峰值对比（放大）.png}
+        \caption{实验电机仿真相电流峰值对比（放大）}
+        \label{fig:实验电机仿真相电流峰值对比（放大）}
+    \end{minipage}
+\end{figure}
+
+式\eqref{eq:磁阻转矩贡献上限表达式}给出了MTPA的适用边界，当磁阻转矩在电磁转矩中的贡献程度上限低于工程上可以检测得到的阈值
+时，MTPA控制策略与\(i_{\mathrm{d}}^*=0\)的控制策略的差异可以被忽略，MTPA在该电机该工况下没有使用和研究的意义了。
