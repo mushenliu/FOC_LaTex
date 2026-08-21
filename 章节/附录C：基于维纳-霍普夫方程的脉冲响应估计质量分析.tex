@@ -80,14 +80,14 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 由于后续分析中所有信号均为离散采样序列，频域分析将采用\textbf{离散时间傅里叶变换（DTFT）}代替连续域的拉普拉斯变换。
 对于自相关序列\(R_{xx}[k]\)，其DTFT即为\textbf{功率谱密度}：
 \begin{equation*}
-    S_{xx}(e^{\mathrm{j}\omega})=\sum_{k=-\infty}^{\infty}R_{xx}[k]\,e^{-\mathrm{j}\omega k}
+    S_{xx}(e^{\jj\omega})=\sum_{k=-\infty}^{\infty}R_{xx}[k]\,e^{-\jj\omega k}
 \end{equation*}
 
-互相关序列\(R_{xy}[k]\)的DTFT\(S_{xy}(e^{\mathrm{j}\omega})\)同理定义。
-由DTFT的卷积定理，离散卷积对应于频域乘积：若\(y_k = g_k * x_k\)，则\(Y(e^{\mathrm{j}\omega})=G(e^{\mathrm{j}\omega})X(e^{\mathrm{j}\omega})\)，
-其中\(G(e^{\mathrm{j}\omega})\)为脉冲响应序列\(g_k\)的DTFT，即系统的\textbf{离散频率响应}。
+互相关序列\(R_{xy}[k]\)的DTFT\(S_{xy}(e^{\jj\omega})\)同理定义。
+由DTFT的卷积定理，离散卷积对应于频域乘积：若\(y_k = g_k * x_k\)，则\(Y(e^{\jj\omega})=G(e^{\jj\omega})X(e^{\jj\omega})\)，
+其中\(G(e^{\jj\omega})\)为脉冲响应序列\(g_k\)的DTFT，即系统的\textbf{离散频率响应}。
 \footnote{\ref{sec:Ho-Kalman辨识过程介绍}中Ho-Kalman辨识得到的脉冲传递函数记为\(G(z)\)，
-其在单位圆上的取值\(G(e^{\mathrm{j}\omega})=G(z)|_{z=e^{\mathrm{j}\omega}}\)即为离散频率响应，以下统一以\(G(e^{\mathrm{j}\omega})\)表示。}
+其在单位圆上的取值\(G(e^{\jj\omega})=G(z)|_{z=e^{\jj\omega}}\)即为离散频率响应，以下统一以\(G(e^{\jj\omega})\)表示。}
 
 \subsection{闭环的偏倚性分析}
 假设需要对下述系统利用维纳-霍普夫方程进行相关分析以求取脉冲响应序列：
@@ -102,9 +102,9 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
     % 放置节点
     \node [input, name=input] {};
     \node [sum, right of=input] (sum) {};
-    \node [block, right of=sum] (G1) {\(G_1(e^{\mathrm{j}\omega})\)};
+    \node [block, right of=sum] (G1) {\(G_1(e^{\jj\omega})\)};
     \node [output, right of=G1] (output) {};
-    \node [block, below of=G1, node distance=2cm] (G2) {\(G_2(e^{\mathrm{j}\omega})\)};
+    \node [block, below of=G1, node distance=2cm] (G2) {\(G_2(e^{\jj\omega})\)};
 
     % 测量环节（主回路之上：x、y；反馈下方：e）
     \node [sum, above of=sum, node distance=2cm] (sumX) {};
@@ -160,7 +160,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 偏差性。
 
 \subsubsection{中间到中间/输出\label{sec:中间到中间/输出的偏倚性分析}}
-选取\(x_k\)作为输入，而\(y_k\)作为输出，辨识前向通道频率响应\(G_1(e^{\mathrm{j}\omega})\)。时域方程满足：
+选取\(x_k\)作为输入，而\(y_k\)作为输出，辨识前向通道频率响应\(G_1(e^{\jj\omega})\)。时域方程满足：
 \begin{align*}
     y_k&=y_{0,k}+n_{y,k}\\
     &=g_{1,k}*x_{0,k}+n_{y,k}\\
@@ -197,33 +197,33 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 
 上式中\(n_{x,-k}\)表示时序反转（与\ref{sec:Ho-Kalman辨识过程介绍}中\(x_{-k}\)的约定一致）。对上式求取DTFT可得：
 \begin{equation*}
-    S_{x\omega}(e^{\mathrm{j}\omega})=-G_1(e^{\mathrm{j}\omega})S_{n_xn_x}(e^{\mathrm{j}\omega})
+    S_{x\omega}(e^{\jj\omega})=-G_1(e^{\jj\omega})S_{n_xn_x}(e^{\jj\omega})
 \end{equation*}
 
 对于理想噪声\(n_{x,k}\)而言，假设其服从正态分布\(n_{x,k}\sim N(0,\sigma_x^2)\)，则
 \(R_{n_xn_x}[k]=\sigma_x^2\delta[k]\)，
 即只在\(k=0\)处有非零值，呈现出尖锐的自相关特征。
-因此其DTFT为常数\(S_{n_xn_x}(e^{\mathrm{j}\omega})=\sigma_x^2\)。
+因此其DTFT为常数\(S_{n_xn_x}(e^{\jj\omega})=\sigma_x^2\)。
 故上式可以进一步化为：
 \begin{equation*}
-    S_{x\omega}(e^{\mathrm{j}\omega})=-G_1(e^{\mathrm{j}\omega})\sigma_x^2
+    S_{x\omega}(e^{\jj\omega})=-G_1(e^{\jj\omega})\sigma_x^2
 \end{equation*}
 
 若对估计的脉冲响应序列直接求取DTFT以估计频率响应，则对维纳-霍普夫方程直接求取DTFT为：
 \begin{align*}
-    S_{xy}(e^{\mathrm{j}\omega})&=G_1(e^{\mathrm{j}\omega})S_{xx}(e^{\mathrm{j}\omega})+S_{x\omega}(e^{\mathrm{j}\omega})\\
-    &=G_1(e^{\mathrm{j}\omega})S_{xx}(e^{\mathrm{j}\omega})-G_1(e^{\mathrm{j}\omega})\sigma_x^2
+    S_{xy}(e^{\jj\omega})&=G_1(e^{\jj\omega})S_{xx}(e^{\jj\omega})+S_{x\omega}(e^{\jj\omega})\\
+    &=G_1(e^{\jj\omega})S_{xx}(e^{\jj\omega})-G_1(e^{\jj\omega})\sigma_x^2
 \end{align*}
 
-估计的频率响应表达式为\(\hat{G_1}(e^{\mathrm{j}\omega})=\cfrac{S_{xy}(e^{\mathrm{j}\omega})}{S_{xx}(e^{\mathrm{j}\omega})}\)，因此有：
+估计的频率响应表达式为\(\hat{G_1}(e^{\jj\omega})=\cfrac{S_{xy}(e^{\jj\omega})}{S_{xx}(e^{\jj\omega})}\)，因此有：
 \begin{equation}
-    \hat{G_1}(e^{\mathrm{j}\omega})=G_1(e^{\mathrm{j}\omega})-\cfrac{G_1(e^{\mathrm{j}\omega})\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}
-    =G_1(e^{\mathrm{j}\omega})[1-\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}]
+    \hat{G_1}(e^{\jj\omega})=G_1(e^{\jj\omega})-\cfrac{G_1(e^{\jj\omega})\sigma_x^2}{S_{xx}(e^{\jj\omega})}
+    =G_1(e^{\jj\omega})[1-\cfrac{\sigma_x^2}{S_{xx}(e^{\jj\omega})}]
     \label{eq:闭环有偏性公式}
 \end{equation}
 
 \subsubsection{偏差直接重构中间到中间/输出\label{sec:偏差直接重构中间到中间/输出的偏倚性分析}}
-选取\(x_k\)作为输入，而\(y_k\)作为输出，辨识前向通道频率响应\(G_1(e^{\mathrm{j}\omega})\)。
+选取\(x_k\)作为输入，而\(y_k\)作为输出，辨识前向通道频率响应\(G_1(e^{\jj\omega})\)。
 但此时\(x_k\)不是单独测量的物理量，而是使用测量反馈信号和给定信号，使用\(x_{\mathrm{rec},k}=u_k-e_k\)重构。
 此时时域方程满足：
 \begin{align*}
@@ -237,11 +237,11 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 可以发现其结构与上一小节完全一致，分析过程也一致，只需要将原先测量的\(x_k\)换为重构得到的
 \(x_{\mathrm{rec},k}=u_k-e_k\)即可。直接给出最终的有偏估计公式：
 \begin{equation*}
-    \hat{G_1}(e^{\mathrm{j}\omega})=G_1(e^{\mathrm{j}\omega})[1-\cfrac{\sigma_e^2}{S_{x_{\mathrm{rec}}x_{\mathrm{rec}}}(e^{\mathrm{j}\omega})}]
+    \hat{G_1}(e^{\jj\omega})=G_1(e^{\jj\omega})[1-\cfrac{\sigma_e^2}{S_{x_{\mathrm{rec}}x_{\mathrm{rec}}}(e^{\jj\omega})}]
 \end{equation*}
 
 \subsubsection{输入直接到输出\label{sec:输入直接到输出}}
-选取\(u_k\)作为输入，而\(y_k\)作为输出，辨识闭环频率响应\(\cfrac{G_1(e^{\mathrm{j}\omega})}{1+G_1(e^{\mathrm{j}\omega})G_2(e^{\mathrm{j}\omega})}\)。
+选取\(u_k\)作为输入，而\(y_k\)作为输出，辨识闭环频率响应\(\cfrac{G_1(e^{\jj\omega})}{1+G_1(e^{\jj\omega})G_2(e^{\jj\omega})}\)。
 此时时域方程满足：
 \begin{equation*}
     y_k = g_k*u_k + n_{y,k}
@@ -255,7 +255,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 上述分析了闭环辨识算法在存在噪声情况的有偏性。不难推广发现，此前对开环辨识分析都是在无噪声的情况下进行的分析。实际情况中
 开环辨识过程中本身也存在噪声，这对于估计的一致性的影响需要进行分析。
 
-假设要辨识一个开环的对象\(G(e^{\mathrm{j}\omega})\)，输入信号为\(u_k\)，输出为\(y_k\)。但在这一过程中，从理想输入到系统实际接收的输入之间
+假设要辨识一个开环的对象\(G(e^{\jj\omega})\)，输入信号为\(u_k\)，输出为\(y_k\)。但在这一过程中，从理想输入到系统实际接收的输入之间
 存在输入侧噪声\(n_{u,k}\)。而在输出侧存在测量噪声\(n_{y,k}\)，使得系统实际输入\(u'_k=u_k+n_{u,k}\)，
 而输出\(y_k=y_{0,k}+n_{y,k}\)，如下图所示。
 \begin{center}
@@ -270,7 +270,7 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
     \node [input, name=input] {};
     \node [sum, right of=input] (sum1) {};
     \node [input,above of=sum1,node distance=1.5cm] (err_i) {};
-    \node [block, right of=sum1] (G) {\(G(e^{\mathrm{j}\omega})\)};
+    \node [block, right of=sum1] (G) {\(G(e^{\jj\omega})\)};
     \node [sum, right of=G,node distance=3cm] (sum2) {};
     \node [input,above of=sum2,node distance=1.5cm] (err_o) {};
     \node [output, right of=sum2] (output) {};
@@ -312,34 +312,34 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 
 上式中\(u_{-k}\)表示\(u_k\)的时序反转（与\ref{sec:Ho-Kalman辨识过程介绍}中\(x_{-k}\)的约定一致），求取DTFT可得：
 \begin{equation*}
-    S_{u\omega}(e^{\mathrm{j}\omega})=G(e^{\mathrm{j}\omega})S_{un_u}(e^{\mathrm{j}\omega})+S_{un_y}(e^{\mathrm{j}\omega})
+    S_{u\omega}(e^{\jj\omega})=G(e^{\jj\omega})S_{un_u}(e^{\jj\omega})+S_{un_y}(e^{\jj\omega})
 \end{equation*}
 
 代入原式可得：
 \begin{align*}
-    S_{uy}(e^{\mathrm{j}\omega})&=G(e^{\mathrm{j}\omega})S_{uu}(e^{\mathrm{j}\omega})+S_{u\omega}(e^{\mathrm{j}\omega})\\
-    &= G(e^{\mathrm{j}\omega})S_{uu}(e^{\mathrm{j}\omega})+G(e^{\mathrm{j}\omega})S_{un_u}(e^{\mathrm{j}\omega})+S_{un_y}(e^{\mathrm{j}\omega})\\
-    \hat{G}(e^{\mathrm{j}\omega})=\cfrac{S_{yu}(e^{\mathrm{j}\omega})}{S_{uu}(e^{\mathrm{j}\omega})}&=G(e^{\mathrm{j}\omega})+G(e^{\mathrm{j}\omega})\cfrac{S_{un_u}(e^{\mathrm{j}\omega})}{S_{uu}(e^{\mathrm{j}\omega})}+\cfrac{S_{un_y}(e^{\mathrm{j}\omega})}{S_{uu}(e^{\mathrm{j}\omega})}
+    S_{uy}(e^{\jj\omega})&=G(e^{\jj\omega})S_{uu}(e^{\jj\omega})+S_{u\omega}(e^{\jj\omega})\\
+    &= G(e^{\jj\omega})S_{uu}(e^{\jj\omega})+G(e^{\jj\omega})S_{un_u}(e^{\jj\omega})+S_{un_y}(e^{\jj\omega})\\
+    \hat{G}(e^{\jj\omega})=\cfrac{S_{yu}(e^{\jj\omega})}{S_{uu}(e^{\jj\omega})}&=G(e^{\jj\omega})+G(e^{\jj\omega})\cfrac{S_{un_u}(e^{\jj\omega})}{S_{uu}(e^{\jj\omega})}+\cfrac{S_{un_y}(e^{\jj\omega})}{S_{uu}(e^{\jj\omega})}
 \end{align*}
 
 整理可得：
 \begin{equation}
-    \hat{G}(e^{\mathrm{j}\omega})=G(e^{\mathrm{j}\omega})[1+\cfrac{S_{un_u}(e^{\mathrm{j}\omega})}{S_{uu}(e^{\mathrm{j}\omega})}]+\cfrac{S_{un_y}(e^{\mathrm{j}\omega})}{S_{uu}(e^{\mathrm{j}\omega})}
+    \hat{G}(e^{\jj\omega})=G(e^{\jj\omega})[1+\cfrac{S_{un_u}(e^{\jj\omega})}{S_{uu}(e^{\jj\omega})}]+\cfrac{S_{un_y}(e^{\jj\omega})}{S_{uu}(e^{\jj\omega})}
     \label{eq:开环带噪的有偏性公式}
 \end{equation}
 
-定义信噪比为\(\cfrac{S_{uu}(e^{\mathrm{j}\omega})}{S_{un_u}(e^{\mathrm{j}\omega})}\)和\(\cfrac{S_{uu}(e^{\mathrm{j}\omega})}{S_{un_y}(e^{\mathrm{j}\omega})}\)。根据\ref{eq:开环带噪的有偏性公式}可知，
+定义信噪比为\(\cfrac{S_{uu}(e^{\jj\omega})}{S_{un_u}(e^{\jj\omega})}\)和\(\cfrac{S_{uu}(e^{\jj\omega})}{S_{un_y}(e^{\jj\omega})}\)。根据\ref{eq:开环带噪的有偏性公式}可知，
 信噪比越高，有偏估计的偏差越小，这也是工程上要求激励信号幅值较大的原因。
 
 \subsection{相干函数与估计质量的评估\label{sec:相干函数与估计质量的评估}}
 
 上述对偏置因子的分析表明，估计的偏置程度取决于等效噪声功率与输入功率谱之比，本质上取决于数据的信噪比。
-然而真实的系统频率响应\(G(e^{\mathrm{j}\omega})\)未知，
+然而真实的系统频率响应\(G(e^{\jj\omega})\)未知，
 偏置因子无法从辨识数据中直接计算，因此需要引入一个可由数据直接计算的指标来评估估计质量。
 
 定义测量输入\(x\)与测量输出\(y\)之间的相干函数为：
 \begin{equation}
-    \gamma_{xy}^2(\omega)=\frac{|S_{xy}(e^{\mathrm{j}\omega})|^2}{S_{xx}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}
+    \gamma_{xy}^2(\omega)=\frac{|S_{xy}(e^{\jj\omega})|^2}{S_{xx}(e^{\jj\omega})S_{yy}(e^{\jj\omega})}
 \end{equation}
 
 相干函数与皮尔逊相关系数类似。皮尔逊相关系数评估的是某一个静态输出变量可以被静态输入变量用一组静态线性关系
@@ -355,43 +355,43 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 
 两边同时对\(x_k=x_{0,k}+n_{x,k}\)进行相关运算并进行离散傅里叶变换可得：
 \begin{equation*}
-    S_{xy}(e^{\mathrm{j}\omega})=G_1(e^{\mathrm{j}\omega})S_{x_0x_0}(e^{\mathrm{j}\omega})
+    S_{xy}(e^{\jj\omega})=G_1(e^{\jj\omega})S_{x_0x_0}(e^{\jj\omega})
 \end{equation*}
 
 此外，对\(x_{k}=x_{0,k}+n_{x,k}\)进行自相关运算并进行傅里叶变换可得
-\footnote{对任意的实数信号进行自相关运算，相关函数总是偶函数。而偶函数的DTFT为实数（不含虚部\(\mathrm{j}\sin\)项），因此
+\footnote{对任意的实数信号进行自相关运算，相关函数总是偶函数。而偶函数的DTFT为实数（不含虚部\(\jj\sin\)项），因此
 任意实数信号的自功率谱密度函数都是实数，这里的\(S_{xx}\)和下文的\(S_{yy}\)都是实数序列。}：
 \begin{equation*}
-    S_{xx}(e^{\mathrm{j}\omega})=S_{x_0x_0}(e^{\mathrm{j}\omega})+\sigma_x^2
+    S_{xx}(e^{\jj\omega})=S_{x_0x_0}(e^{\jj\omega})+\sigma_x^2
 \end{equation*}
 
 对\(y_k=g_{1,k}*x_{0,k}+n_{y,k}\)进行自相关运算并进行傅里叶变换可得：
 \begin{equation*}
-    S_{yy}(e^{\mathrm{j}\omega})=|G_1(e^{\mathrm{j}\omega})|^2S_{x_0x_0}(e^{\mathrm{j}\omega})+\sigma_y^2
+    S_{yy}(e^{\jj\omega})=|G_1(e^{\jj\omega})|^2S_{x_0x_0}(e^{\jj\omega})+\sigma_y^2
 \end{equation*}
 
 将上述三式代入相干函数定义可得：
 \begin{align*}
-    \gamma_{xy}^2(\omega)&=\cfrac{|S_{xy}(e^{\mathrm{j}\omega})|^2}{S_{xx}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}\\
-    &=\cfrac{|G_1(e^{\mathrm{j}\omega})|^2S_{x_0x_0}^2(e^{\mathrm{j}\omega})}
-    {S_{xx}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}\\
-    &=\cfrac{S_{x_0x_0}(e^{\mathrm{j}\omega})}{S_{xx}(e^{\mathrm{j}\omega})}\times
-    \cfrac{S_{x_0x_0}(e^{\mathrm{j}\omega})|G_1(e^{\mathrm{j}\omega})|^2}{S_{yy}(e^{\mathrm{j}\omega})}\\
-    &=[1-\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}]\times
-    \cfrac{S_{x_0x_0}(e^{\mathrm{j}\omega})|G_1(e^{\mathrm{j}\omega})|^2}
-    {|G_1(e^{\mathrm{j}\omega})|^2S_{x_0x_0}(e^{\mathrm{j}\omega})+\sigma_y^2}\\
-    &\le 1-\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}
+    \gamma_{xy}^2(\omega)&=\cfrac{|S_{xy}(e^{\jj\omega})|^2}{S_{xx}(e^{\jj\omega})S_{yy}(e^{\jj\omega})}\\
+    &=\cfrac{|G_1(e^{\jj\omega})|^2S_{x_0x_0}^2(e^{\jj\omega})}
+    {S_{xx}(e^{\jj\omega})S_{yy}(e^{\jj\omega})}\\
+    &=\cfrac{S_{x_0x_0}(e^{\jj\omega})}{S_{xx}(e^{\jj\omega})}\times
+    \cfrac{S_{x_0x_0}(e^{\jj\omega})|G_1(e^{\jj\omega})|^2}{S_{yy}(e^{\jj\omega})}\\
+    &=[1-\cfrac{\sigma_x^2}{S_{xx}(e^{\jj\omega})}]\times
+    \cfrac{S_{x_0x_0}(e^{\jj\omega})|G_1(e^{\jj\omega})|^2}
+    {|G_1(e^{\jj\omega})|^2S_{x_0x_0}(e^{\jj\omega})+\sigma_y^2}\\
+    &\le 1-\cfrac{\sigma_x^2}{S_{xx}(e^{\jj\omega})}
 \end{align*}
 
 也就是说，相干函数总不大于偏差因子。对不等式变形可得：
 \begin{equation*}
-    \cfrac{\sigma_{x}^2}{S_{xx}(e^{\mathrm{j}\omega})} \le 1-\gamma_{xy}^2(\omega)
+    \cfrac{\sigma_{x}^2}{S_{xx}(e^{\jj\omega})} \le 1-\gamma_{xy}^2(\omega)
 \end{equation*}
 
-因此，相干函数在某个频点越高，对应的估计相对误差\(\cfrac{\sigma_{x}^2}{S_{xx}(e^{\mathrm{j}\omega})}\)上限越低，
+因此，相干函数在某个频点越高，对应的估计相对误差\(\cfrac{\sigma_{x}^2}{S_{xx}(e^{\jj\omega})}\)上限越低，
 估计脉冲响应的期望值越接近实际脉冲响应。
-\footnote{例如在某个频点上相干函数值为0.95，则说明偏差因子\(1-\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}
-\ge 0.95\)，估计脉冲响应的期望值与实际脉冲响应在该频点处最大相对偏差\(\cfrac{\sigma_x^2}{S_{xx}(e^{\mathrm{j}\omega})}\)
+\footnote{例如在某个频点上相干函数值为0.95，则说明偏差因子\(1-\cfrac{\sigma_x^2}{S_{xx}(e^{\jj\omega})}
+\ge 0.95\)，估计脉冲响应的期望值与实际脉冲响应在该频点处最大相对偏差\(\cfrac{\sigma_x^2}{S_{xx}(e^{\jj\omega})}\)
 不超过0.05。}
 
 针对\ref{sec:偏差直接重构中间到中间/输出的偏倚性分析}的情况，由于输出信号的表达式结构与\ref{sec:中间到中间/输出的偏倚性分析}的
@@ -400,37 +400,37 @@ Ho-Kalman辨识算法属于\textbf{开环辨识算法}，即默认待辨识的�
 而对于\ref{sec:输入直接到输出}情况，时域表达式满足\(y_k=g_k*u_k+n_{y,k}\)，此时功率谱密度函数满足：
 \begin{equation*}
     \begin{cases}
-        S_{uy}(e^{\mathrm{j}\omega})=G(e^{\mathrm{j}\omega})S_{uu}(e^{\mathrm{j}\omega})\\
-        S_{uu}(e^{\mathrm{j}\omega})=S_{uu}(e^{\mathrm{j}\omega})\\
-        S_{yy}(e^{\mathrm{j}\omega})=|G(e^{\mathrm{j}\omega})|^2S_{uu}(e^{\mathrm{j}\omega})+\sigma_y^2
+        S_{uy}(e^{\jj\omega})=G(e^{\jj\omega})S_{uu}(e^{\jj\omega})\\
+        S_{uu}(e^{\jj\omega})=S_{uu}(e^{\jj\omega})\\
+        S_{yy}(e^{\jj\omega})=|G(e^{\jj\omega})|^2S_{uu}(e^{\jj\omega})+\sigma_y^2
     \end{cases}
 \end{equation*}
 
 代入相干函数定义可得：
 \begin{align*}
-    \gamma_{uy}^2(\omega)&=\cfrac{|S_{uy}(e^{\mathrm{j}\omega})|^2}{S_{uu}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}\\
-    &=\cfrac{|G(e^{\mathrm{j}\omega})|^2S_{uu}^2(e^{\mathrm{j}\omega})}
-    {S_{uu}(e^{\mathrm{j}\omega})S_{yy}(e^{\mathrm{j}\omega})}\\
-    &=\cfrac{S_{uu}(e^{\mathrm{j}\omega})}{S_{uu}(e^{\mathrm{j}\omega})}\times
-    \cfrac{S_{uu}(e^{\mathrm{j}\omega})|G(e^{\mathrm{j}\omega})|^2}{S_{yy}(e^{\mathrm{j}\omega})}\\
-    &=\cfrac{S_{uu}(e^{\mathrm{j}\omega})|G(e^{\mathrm{j}\omega})|^2}
-    {|G(e^{\mathrm{j}\omega})|^2S_{uu}(e^{\mathrm{j}\omega})+\sigma_y^2}
+    \gamma_{uy}^2(\omega)&=\cfrac{|S_{uy}(e^{\jj\omega})|^2}{S_{uu}(e^{\jj\omega})S_{yy}(e^{\jj\omega})}\\
+    &=\cfrac{|G(e^{\jj\omega})|^2S_{uu}^2(e^{\jj\omega})}
+    {S_{uu}(e^{\jj\omega})S_{yy}(e^{\jj\omega})}\\
+    &=\cfrac{S_{uu}(e^{\jj\omega})}{S_{uu}(e^{\jj\omega})}\times
+    \cfrac{S_{uu}(e^{\jj\omega})|G(e^{\jj\omega})|^2}{S_{yy}(e^{\jj\omega})}\\
+    &=\cfrac{S_{uu}(e^{\jj\omega})|G(e^{\jj\omega})|^2}
+    {|G(e^{\jj\omega})|^2S_{uu}(e^{\jj\omega})+\sigma_y^2}
 \end{align*}
 
 可以发现，此时的相干函数恰好等于输出端信噪比的形式。由于本情形下输入无噪，估计是无偏的，因此相干函数不再反映估计偏差，
 而是纯粹衡量输出端的信噪比，并直接决定估计的方差。
 
 这一关系可由现代谱估计理论的结论定量化\cite{Bendat2010}：对输入输出序列分段平均后，频率响应的维纳-霍普夫方程估计脉冲响应序列
-\(\hat{G}(e^{\mathrm{j}\omega})=\cfrac{S_{xy}(e^{\mathrm{j}\omega})}{S_{xx}(e^{\mathrm{j}\omega})}\)的归一化方差近似满足：
+\(\hat{G}(e^{\jj\omega})=\cfrac{S_{xy}(e^{\jj\omega})}{S_{xx}(e^{\jj\omega})}\)的归一化方差近似满足：
 \begin{equation*}
-    \cfrac{\mathrm{Var}[\hat G(\mathrm{j}\omega)]}{|G(\mathrm{j}\omega)|^2}
+    \cfrac{\mathrm{Var}[\hat G(\jj\omega)]}{|G(\jj\omega)|^2}
     \approx\cfrac{1-\gamma_{xy}^2(\omega)}{\gamma_{xy}^2(\omega)N_{\mathrm{eff}}}
 \end{equation*}
 
 其中\(N_{\mathrm{eff}}\)为等效平均次数。其物理解释为：相干函数等于输出功率中可被输入线性解释的比例，未解释的部分\(1-\gamma_{xy}^2\)构成估计的噪声源，
 \(N_{\mathrm{eff}}\)次独立平均将方差压低至原来的\(\cfrac{1}{N_{\mathrm{eff}}}\)。相应地，频率响应的相对标准差为
 \begin{equation}
-    \cfrac{\sigma_{\hat G}(\omega)}{|G(\mathrm{j}\omega)|}
+    \cfrac{\sigma_{\hat G}(\omega)}{|G(\jj\omega)|}
     \approx\sqrt{\cfrac{1-\gamma_{xy}^2(\omega)}{\gamma_{xy}^2(\omega)N_{\mathrm{eff}}}}
     \label{eq:估计方差与相干函数}
 \end{equation}

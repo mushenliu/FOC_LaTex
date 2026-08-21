@@ -253,11 +253,11 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
 
 对上式进行自相关运算，求解输入自功率谱密度函数和输入输出互功率谱密度函数，其商就是估计脉冲响应的离散傅里叶变换DTFT：
 \begin{equation*}
-    \hat{G}_{\mathrm{m}}(e^{\mathrm{j}\omega})=G_{\mathrm{m}}(e^{\mathrm{j}\omega})
-    [1-\cfrac{\sigma_{\mathrm{T}}^2}{S_{T_{\mathrm{e}}T_{\mathrm{e}}}(e^{\mathrm{j}\omega})}]
+    \hat{G}_{\mathrm{m}}(e^{\jj\omega})=G_{\mathrm{m}}(e^{\jj\omega})
+    [1-\cfrac{\sigma_{\mathrm{T}}^2}{S_{T_{\mathrm{e}}T_{\mathrm{e}}}(e^{\jj\omega})}]
 \end{equation*}
 
-其中\(\sigma_{\mathrm{T}}^2\)为测量噪声\(n_{\mathrm{T}}\)的方差，而\(S_{T_{\mathrm{e}}T_{\mathrm{e}}}(e^{\mathrm{j}\omega})\)
+其中\(\sigma_{\mathrm{T}}^2\)为测量噪声\(n_{\mathrm{T}}\)的方差，而\(S_{T_{\mathrm{e}}T_{\mathrm{e}}}(e^{\jj\omega})\)
 为实际测量值的自功率谱密度函数。由上式可知，在闭环情况下，
 试图用开环的算法估计系统的脉冲响应，进而去分析系统的传递函数，结果将是有偏的。
 
@@ -266,11 +266,11 @@ Q轴的方波仅持续5个采样周期\footnote{Q轴测试时电机会因电磁�
 \footnote{具体推导见\ref{sec:偏差直接重构中间到中间/输出的偏倚性分析}。}，但在开环和闭环验证中
 均证实了辨识结果的有效性。因此，需要相干函数评估辨识结果的工程可用性：
 \begin{equation}
-    \gamma_{xy}^2(\omega)=\frac{|S_{xy}(e^{\mathrm{j}\omega})|^2}{S_{xx}(e^{\mathrm{j}\omega})\,S_{yy}(e^{\mathrm{j}\omega})}
+    \gamma_{xy}^2(\omega)=\frac{|S_{xy}(e^{\jj\omega})|^2}{S_{xx}(e^{\jj\omega})\,S_{yy}(e^{\jj\omega})}
     \label{eq:相干函数定义}
 \end{equation}
 
-其中\(S_{xy}(e^{\mathrm{j}\omega})\)为互功率谱密度，\(S_{xx}(e^{\mathrm{j}\omega})\)和\(S_{yy}(e^{\mathrm{j}\omega})\)为自功率谱密度。
+其中\(S_{xy}(e^{\jj\omega})\)为互功率谱密度，\(S_{xx}(e^{\jj\omega})\)和\(S_{yy}(e^{\jj\omega})\)为自功率谱密度。
 相干函数满足\(0\le \gamma_{xy}^2(\omega)\le 1\)，在某个频点的值越接近1，说明输出信号中该频点的分量可以被输入信号线性解释的比例越高，
 使用维纳-霍普夫方程估计脉冲响应序列在这个频点的可信度也越高。相干函数作为信噪比度量的含义、与偏置因子之间的联系详见\ref{sec:相干函数与估计质量的评估}。
 
@@ -633,15 +633,15 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
     =\sum_{k=1}^{n+m}S_{G_k}(s)\cfrac{\Delta G_k(s)}{G_k(s)}
 \end{equation*}
 
-由于分析误差时主要关心频域信息，因此取\(s=\mathrm{j}\omega\)可得：
+由于分析误差时主要关心频域信息，因此取\(s=\jj\omega\)可得：
 \begin{equation*}
-    \cfrac{\Delta G_{\mathrm{o}}(\mathrm{j}\omega)}{G_{\mathrm{o}}(\mathrm{j}\omega)}
-    =\sum_{k=1}^{n+m}S_{G_k}(\mathrm{j}\omega)\cfrac{\Delta G_k(\mathrm{j}\omega)}{G_k(\mathrm{j}\omega)}
+    \cfrac{\Delta G_{\mathrm{o}}(\jj\omega)}{G_{\mathrm{o}}(\jj\omega)}
+    =\sum_{k=1}^{n+m}S_{G_k}(\jj\omega)\cfrac{\Delta G_k(\jj\omega)}{G_k(\jj\omega)}
 \end{equation*}
 
 
-其中灵敏度函数\(S_{G_k}(\mathrm{j}\omega)\)为频率的复函数，定量刻画反推结果
-对第\(k\)个传递函数的放大倍数；\(\cfrac{\Delta G_k(\mathrm{j}\omega)}{G_k(\mathrm{j}\omega)}\)为第\(k\)个传递函数的相对误差。
+其中灵敏度函数\(S_{G_k}(\jj\omega)\)为频率的复函数，定量刻画反推结果
+对第\(k\)个传递函数的放大倍数；\(\cfrac{\Delta G_k(\jj\omega)}{G_k(\jj\omega)}\)为第\(k\)个传递函数的相对误差。
 对结构已知、参数测量得到的传递函数，传递函数模块的相对误差可以被进一步拆解为对内部测量参数的相对误差。而对于辨识得到的
 传递函数，可以用\ref{eq:估计方差与相干函数}来计算相对误差。
 
@@ -661,7 +661,7 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
 其二是测量偏差。\(G(s)\)由有限长度的实测数据经维纳-霍普夫方程估计得到脉冲响应序列，再通过Ho-Kalman算法得到解析的传递函数。
 尽管可以证明该估计期望是无偏估计，但有限长数据带来随机误差（方差），可以用\ref{eq:估计方差与相干函数}来近似为：
 \begin{equation*}
-    \cfrac{\sigma_{\hat G}(\omega)}{|G(\mathrm{j}\omega)|}
+    \cfrac{\sigma_{\hat G}(\omega)}{|G(\jj\omega)|}
     \approx\sqrt{\cfrac{1-\gamma_{xy}^2(\omega)}{\gamma_{xy}^2(\omega)N_{\mathrm{eff}}}}
 \end{equation*}
 
@@ -695,32 +695,32 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
 定义灵敏度函数：
 \begin{equation}
     \begin{cases}
-        S_{R}(\mathrm{j}\omega)=\cfrac{R_{\mathrm{s}}}{R_{\mathrm{s}}+\mathrm{j}\omega L_{\mathrm{q}}}\\
-        S_{L}(\mathrm{j}\omega)=\cfrac{\mathrm{j}\omega L_{\mathrm{q}}}{R_{\mathrm{s}}+\mathrm{j}\omega L_{\mathrm{q}}}\\
-        S_{G}(\mathrm{j}\omega)=\cfrac{1}{1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(\mathrm{j}\omega)}\\
-        S_{\psi}(\mathrm{j}\omega)=\cfrac{\cfrac{\pi}{15}p\psi_{\mathrm{m}}G(\mathrm{j}\omega)-1}{1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(\mathrm{j}\omega)}
+        S_{R}(\jj\omega)=\cfrac{R_{\mathrm{s}}}{R_{\mathrm{s}}+\jj\omega L_{\mathrm{q}}}\\
+        S_{L}(\jj\omega)=\cfrac{\jj\omega L_{\mathrm{q}}}{R_{\mathrm{s}}+\jj\omega L_{\mathrm{q}}}\\
+        S_{G}(\jj\omega)=\cfrac{1}{1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(\jj\omega)}\\
+        S_{\psi}(\jj\omega)=\cfrac{\cfrac{\pi}{15}p\psi_{\mathrm{m}}G(\jj\omega)-1}{1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(\jj\omega)}
     \end{cases}
     \label{eq:灵敏度函数}
 \end{equation}
 
 那么相对误差可以表示为：
 \begin{equation*}
-    \cfrac{\Delta G_{\mathrm{m}}(\mathrm{j}\omega)}{G_{\mathrm{m}}(\mathrm{j}\omega)}=
-    S_{R}(\mathrm{j}\omega)\cfrac{\Delta R_{\mathrm{s}}}{R_{\mathrm{s}}}
-    +S_{L}(\mathrm{j}\omega)\cfrac{\Delta L_{\mathrm{q}}}{L_{\mathrm{q}}}
-    +S_{G}(\mathrm{j}\omega)\cfrac{\Delta G}{G(s)}
-    +S_{\psi}(\mathrm{j}\omega)\cfrac{\Delta \psi_{\mathrm{m}}}{\psi_{\mathrm{m}}}
+    \cfrac{\Delta G_{\mathrm{m}}(\jj\omega)}{G_{\mathrm{m}}(\jj\omega)}=
+    S_{R}(\jj\omega)\cfrac{\Delta R_{\mathrm{s}}}{R_{\mathrm{s}}}
+    +S_{L}(\jj\omega)\cfrac{\Delta L_{\mathrm{q}}}{L_{\mathrm{q}}}
+    +S_{G}(\jj\omega)\cfrac{\Delta G}{G(s)}
+    +S_{\psi}(\jj\omega)\cfrac{\Delta \psi_{\mathrm{m}}}{\psi_{\mathrm{m}}}
 \end{equation*}
 
 由于\(\psi_{\mathrm{m}}\)的辨识依赖于\(R_{\mathrm{s}}\)，\(L_{\mathrm{q}}\)的辨识依赖于\(R_{\mathrm{s}}\)与
 \(\psi_{\mathrm{m}}\)，各输入量的误差经误差传递相互关联，并非独立，无法按独立误差作均方根合成。
 因此取最坏情况下的线性叠加，作为反推结果相对标准差的上界：
 \begin{equation}
-    \cfrac{\sigma_{G_{\mathrm{m}}}(\omega)}{|G_{\mathrm{m}}(\mathrm{j}\omega)|}
-    =|S_R(\mathrm{j}\omega)|\cfrac{\sigma_R}{R_{\mathrm{s}}}
-    +|S_L(\mathrm{j}\omega)|\cfrac{\sigma_L}{L_{\mathrm{q}}}
-    +|S_G(\mathrm{j}\omega)|\cfrac{\sigma_G(\omega)}{|G(\mathrm{j}\omega)|}
-    +|S_\psi(\mathrm{j}\omega)|\cfrac{\sigma_\psi}{\psi_{\mathrm{m}}}
+    \cfrac{\sigma_{G_{\mathrm{m}}}(\omega)}{|G_{\mathrm{m}}(\jj\omega)|}
+    =|S_R(\jj\omega)|\cfrac{\sigma_R}{R_{\mathrm{s}}}
+    +|S_L(\jj\omega)|\cfrac{\sigma_L}{L_{\mathrm{q}}}
+    +|S_G(\jj\omega)|\cfrac{\sigma_G(\omega)}{|G(\jj\omega)|}
+    +|S_\psi(\jj\omega)|\cfrac{\sigma_\psi}{\psi_{\mathrm{m}}}
     \label{eq:标准差上界}
 \end{equation}
 
@@ -728,7 +728,7 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
 ，根据前文数据可得相对标准误差分别为：\(\cfrac{\sigma_R}{R_{\mathrm{s}}}=2.78\%\)、\(\cfrac{\sigma_L}{L_{\mathrm{q}}}=0.2\%\)
 \footnote{简单起见，\(L_{\mathrm{q}}\)的相对标准误差采用相间电感测量时得到的值。}、
 \(\cfrac{\sigma_\psi}{\psi_{\mathrm{m}}}=1.79\%\)。而
-\(\cfrac{\sigma_G(\omega)}{|G(\mathrm{j}\omega)|}\)为闭环辨识的相对误差，由相干函数按\eqref{eq:估计方差与相干函数}估计。
+\(\cfrac{\sigma_G(\omega)}{|G(\jj\omega)|}\)为闭环辨识的相对误差，由相干函数按\eqref{eq:估计方差与相干函数}估计。
 
 对四个工作点分别计算上式，得到反推结果相对标准误差随频率的分布，结果如下图所示。
 \begin{figure}[H]
@@ -787,7 +787,7 @@ Q轴辨识通过重构等效输入近似为开环（但是闭环的物理结构�
 高于辨识模型隐含的约63.6 rpm/V，且观察到了明显的转速常数随工作点而升高的现象。
 将修正后的开环直流增益代入模型后，开环与闭环验证均与实测明显不符。
 推测原因有三个：其一是灵敏度函数\(S_{G}(\mathrm{j\omega})\)太大，转速常数的很小偏差都会在开环直流增益中引发
-极大的偏离\footnote{直流处灵敏度函数\(S_G(\mathrm{j}0)=[1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(0)]^{-1}\approx 22\)，
+极大的偏离\footnote{直流处灵敏度函数\(S_G(\jj0)=[1-\cfrac{\pi}{30}p\psi_{\mathrm{m}}G(0)]^{-1}\approx 22\)，
 即转速常数（闭环直流增益）1\%的相对偏差经反推会被放大为开环直流增益约22\%的偏离。}；其二是电机本身的非线性因素较强，齿槽转矩严重，
 在恒定电压激励下会因为齿槽转矩而发生周期性波动，难以准确计算
 稳态转速和转速常数；其三是由于机械摩擦和逆变器死区导致测得的转速常数随激励电压而变化，使得用单一数值描述本身就缺乏合理性。

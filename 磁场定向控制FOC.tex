@@ -5,6 +5,8 @@
 \newcommand{\ZiTi}{\heiti}  %标题字体
 \newcommand{\Color}{purple}  %重点内容颜色
 \newcommand{\dd}{\mathrm{d}}  %微分正体d
+\newcommand{\ee}{\mathrm{e}}  %自然常数正体e
+\newcommand{\jj}{\mathrm{j}}  %虚数单位正体j
 
 %%                          宏包
 \usepackage[UTF8,heading=true]{ctex} % 中文支持，heading=true 以支持ctexset
@@ -123,7 +125,7 @@
     bookmarksnumbered=true,
     bookmarksopen=true
 }
-\renewcommand{\thefootnote}{[\ifnum\value{footnote}<27\Alph{footnote}\else\arabic{footnote}\fi]}
+\renewcommand{\thefootnote}{[\ifnum\value{footnote}<26\Alph{footnote}\else\arabic{footnote}\fi]}
 % 定义样式
 \tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=6em]
 \tikzstyle{sum} = [draw, circle, node distance=1.5cm]
